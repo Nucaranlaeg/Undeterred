@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<meta charset="UTF-8" http-equiv="Content-Type">
+<html>
+	<head>
+		<title>Undeterred</title>
+		<script src="settings.js"></script>
+		<script src="ai.js"></script>
+		<script src="stat.js"></script>
+		<script src="unit.js"></script>
+		<script src="autobuyer.js"></script>
+		<script src="creatures.js"></script>
+		<script src="maps.js"></script>
+		<script src="messages.js"></script>
+		<script src="main.js"></script>
+		<link rel="stylesheet" type="text/css" href="style.css">
+	</head>
+	<body>
+		<div id="templates">
+			<div id="stat-template" class="stat">
+				<div class="name"></div>
+				<div class="value"></div>
+				<div class="description"></div>
+				<div class="cap-wrapper">
+					<div class="cap"></div>
+					<button class="cap-increase">+</button>
+				</div>
+			</div>
+			<table>
+				<tr id="row-template"></tr>
+				<tr>
+					<td id="cell-template"></td>
+				</tr>
+			</table>
+			<div id="unit-summary-template" class="unit-summary">
+				<div class="name">You #<span class="loop-count"></span></div>
+				<div class="kill-button">x</div>
+				<div class="character"></div>
+				<div class="summary-label">Total XP:</div>
+				<div class="total-xp"></div>
+				<div class="summary-label">Free XP:</div>
+				<div class="spendable-xp"></div>
+				<div class="removal"></div>
+			</div>
+			<div id="enemy-summary-template" class="unit-summary">
+				<div class="name"></div>
+				<div class="character"></div>
+				<div class="summary-label">XP:</div>
+				<div class="total-xp"></div>
+			</div>
+			<div id="message-template" class="message">
+			</div>
+		</div>
+		<div class="col options-col">
+			<div class="col-header">Options</div>
+			<button id="start-button" onclick="beginRun()">Enter the dungeon!</button>
+			<button id="auto-unselect" class="option-button" onclick="toggleSetting('autoUnselect')"></button>
+			<button id="autorun" class="option-button" onclick="toggleSetting('autorun')"></button>
+			<button id="auto-discard" class="option-button" onclick="toggleSetting('autoDiscard')"></button>
+			<button id="auto-buyer" class="option-button" onclick="toggleSetting('autoBuyer')"></button>
+			<div class="col-header">Messages</div>
+			<div id="messages"></div>
+		</div>
+		<div class="col">
+			<div id="map-title"></div>
+			<div id="map-wrapper">
+				<table id="map"></table>
+			</div>
+		</div>
+		<div id="party-wrapper" class="col party-col">
+			<div class="col-header">Party</div>
+			<div id="party"></div>
+		</div>
+		<div id="current-unit-wrapper" class="unit-col col">
+			<div class="col-header">You</div>
+			<div class="char-info">
+				XP:<div class="xp-amount"></div><br>
+				Cap Breakers:<div class="cap-breakers"></div><br>
+				AI:<div class="ai"></div>
+			</div>
+			<div id="current-unit" class="unit-col col"></div>
+		</div>
+		<div id="other-unit-wrapper" class="unit-col col">
+			<div class="col-header">Someone Else</div>
+			<div class="char-info">
+				XP:<div class="xp-amount"></div><br>
+				Cap Breakers:<div class="cap-breakers"></div><br>
+				AI:<div class="ai"></div>
+			</div>
+			<div id="other-unit" class="unit-col col"></div>
+		</div>
+		<div id="enemies-wrapper" class="col party-col">
+			<div class="col-header">Enemy Creatures</div>
+			<div id="enemy-creatures"></div>
+		</div>
+	</body>
+</html>
