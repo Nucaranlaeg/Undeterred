@@ -1,5 +1,3 @@
-console.log("Loading maps.js")
-
 class Map {
 	constructor(mapName, layout, creatures, vision, reward, conquerMessage){
 		this.mapName = mapName;
@@ -32,7 +30,7 @@ class Map {
 				}
 				let enemy = this.creatures[cell];
 				enemy.unit.level = enemy.level;
-				let enemyUnit = new Unit(false, enemy.name, enemy.unit, enemy.ai || "simple");
+				let enemyUnit = new Unit(false, enemy.name, enemy.unit, enemy.ai || "Simple");
 				enemyUnit.x = x;
 				enemyUnit.y = y;
 				enemyUnit.xp = enemy.unit.xp;
@@ -58,8 +56,11 @@ class Map {
 
 	complete(){
 		if (!this.conquered){
-			applyReward(this.reward);
+			if (currentLevel >= bestLevel) applyReward(this.reward);
 			displayMessage(this.conquerMessage);
+		}
+		if (activeChallenge){
+			activeChallenge.updateReward();
 		}
 		this.conquered = true;
 		this.uninstantiate();
@@ -105,7 +106,7 @@ class Map {
 			}
 		}
 	}
-	
+
 	drawCreatures(player_units){
 		this.nodesWithCreatures.forEach(node => {
 			node.innerHTML = "";
@@ -177,13 +178,14 @@ class Map {
 		return this.map[y][x][1];
 	}
 
-	isEmpty(x, y){
-		return this.map[y] && this.map[y][x] && this.map[y][x][0] == "." && !this.enemies.some(enemy => enemy.x == x && enemy.y == y && !enemy.dead) && !playerUnits.some(unit => unit.x == x && unit.y == y && !unit.dead && unit.active);
+	isEmpty(x, y, ignoreCreatures){
+		return this.map[y] && this.map[y][x] && this.map[y][x][0] == "." && (ignoreCreatures || (!this.enemies.some(enemy => enemy.x == x && enemy.y == y && !enemy.dead) && !playerUnits.some(unit => unit.x == x && unit.y == y && !unit.dead && unit.active)));
 	}
 
 	highlight(highlightColour, x, y){
 		if (!this.mapNodes[0]) return;
 		[...document.querySelectorAll(`.highlight-${highlightColour}`)].forEach(node => node.classList.remove(`highlight-${highlightColour}`));
+		if (!this.mapNodes[y] || !this.mapNodes[y][x]) return;
 		this.mapNodes[y][x].classList.add(`highlight-${highlightColour}`);
 	}
 
@@ -202,12 +204,23 @@ const classMapping = {
 
 /*
 *	L	XP	CUM
+*	***********ANTS**********
 *	1	5	5
-*	2	11	16
-*	3	18	34
-*	4	26	60
-*	5	35	95
-*	6	45	140
+*	2	10	15
+*	3	15	30
+*	4	20	50
+*	5	25	75
+*	6	30	105
+*	7	35	140
+*	8	40	180
+*	9	45	225
+*	10	50	275
+*	*********GOBLINS*********
+*	11	42	317
+*	12	48	365
+*	13	54	419
+*	14	60	479
+*	15	66	545
 */
 
 maps.push(new Map("Level 1",
@@ -242,7 +255,7 @@ maps.push(new Map("Level 2",
 					 "#a......###...#",
 					 "##...#######..#",
 					 "##a.a##...###.#",
-					 "##...#a..a##..#",
+					 "##...#...a##..#",
 					 "###.###...##..#",
 					 "###.###..###.a#",
 					 "###......######",
@@ -255,33 +268,79 @@ maps.push(new Map("Level 2",
 					"There are far more of these creatures than you had expected.  You press on."));
 
 maps.push(new Map("Level 3",
+					["###########",
+					 "#12########",
+					 "#34.....aa#",
+					 "##...#..aa#",
+					 "##.....####",
+					 "##.a....a##",
+					 "##...#.#aa#",
+					 "##..##...##",
+					 "##aa###aaa#",
+					 "##aa#######",
+					 "###########"],
+					{
+						"a": {unit: creatures.antWorker, level: 4},
+					},
+					4,
+					"Autobuyer Damage",
+					"The tight confines of this anthill do not faze you.  You refuse to yield to fear."));
+
+maps.push(new Map("Level 4",
+					["###############",
+					 "#12....###...##",
+					 "#34###a..a.#..#",
+					 "######.######.#",
+					 "###.a..#a..a#.#",
+					 "#...##.##.###.#",
+					 "#.####.##..a..#",
+					 "#.####.####.###",
+					 "#..a##.##a#..##",
+					 "######a##.##.##",
+					 "#.a#...##.##a.#",
+					 "#.##.#.##.###.#",
+					 "#..a.#.#a..a..#",
+					 "##.###.####.###",
+					 "##.#a.a####..a#",
+					 "##.###.######.#",
+					 "##.###...a###.#",
+					 "##a########a..#",
+					 "###############"],
+					{
+						"a": {unit: creatures.antWorker, level: 5},
+					},
+					4,
+					"Autobuyer Health",
+					"The maze-like anthill goes deep into the ground.  You feel like you've been lost a dozen times or more by now."));
+
+maps.push(new Map("Level 5",
 					["#################",
 					 "#12.....a...#####",
 					 "#34.######.###r##",
-					 "#.......##.....##",
+					 "#.......##.r...##",
 					 "#.#.###a#####a.##",
 					 "#.#.###.#..##..##",
 					 "#.#.###.ar.##.###",
 					 "#.#a####...##.###",
 					 "#.#..####.###.###",
-					 "#a#....##.......#",
+					 "#a#....##......r#",
 					 "#.##..##.a#####.#",
 					 "#.###.##.######.#",
 					 "#.###a....##r...#",
-					 "#.###.###.###..##",
+					 "#r###.###.###..##",
 					 "#..#..###.##....#",
 					 "##...####.##..r##",
-					 "##...r........###",
+					 "##...r......a.###",
 					 "#################"],
 					{
-						"a": {unit: creatures.antWorker, level: 4},
-						"r": {unit: creatures.antWarrior, level: 2},
+						"a": {unit: creatures.antWorker, level: 6},
+						"r": {unit: creatures.antWarrior, level: 4},
 					},
 					4,
 					"Block",
-					"With each new level, the creatures seem to be getting stronger.  Surely there are great treasures to be discovered below!  You emerge into a larger cavern."));
+					"Larger, more dangerous ants have arrived.  You seem to be provoking the ants to deal with you."));
 
-maps.push(new Map("Level 4",
+maps.push(new Map("Level 6",
 					["#################",
 					 "#12...#.....#####",
 					 "#34....aa..###.##",
@@ -291,24 +350,24 @@ maps.push(new Map("Level 4",
 					 "##.a........r.###",
 					 "#..#..#..r...####",
 					 "#...r.........###",
-					 "#.#....##.......#",
-					 "#.##............#",
+					 "#.#....##...a...#",
+					 "#.##..........a.#",
 					 "#r###.##..r.....#",
 					 "#####rr.........#",
 					 "#####...#...#..##",
 					 "####....#.#...r.#",
-					 "##...#.........##",
+					 "##..r#.........##",
 					 "##a.......r...###",
 					 "#################"],
-					 {
-						 "a": {unit: creatures.antWorker, level: 5},
-						 "r": {unit: creatures.antWarrior, level: 3},
-					 },
-					 5,
-					 "autoUnselect",
-					 "The ants are getting larger and fiercer.  But you are getting stronger as well, and feel confident you can complete this challenge."));
+					{
+						"a": {unit: creatures.antWorker, level: 7},
+						"r": {unit: creatures.antWarrior, level: 5},
+					},
+					5,
+					"autoUnselect",
+					"With each new level, the creatures seem to be getting stronger.  Surely there are great treasures to be discovered below!  You emerge into a larger cavern."));
 
-maps.push(new Map("Level 5",
+maps.push(new Map("Level 7",
 					["#################",
 					 "#12.........#####",
 					 "#34.........#####",
@@ -328,19 +387,74 @@ maps.push(new Map("Level 5",
 					 "##aaaa........###",
 					 "##aaaa.......r###",
 					 "#################"],
-					 {
-						 "a": {unit: creatures.antWorker, level: 6},
-						 "r": {unit: creatures.antWarrior, level: 4},
-					 },
-					 5,
-					 "AutoBuyer",
-					 "You continue cautiously into the dark.  Surely it won't be long before you manage to conquer this anthill."));
-					 
-maps.push(new Map("Level 6",
+					{
+						"a": {unit: creatures.antWorker, level: 8},
+						"r": {unit: creatures.antWarrior, level: 6},
+					},
+					4,
+					"autoDiscard",
+					"The ants are getting larger and fiercer.  But you are getting stronger as well, and feel confident you can complete this challenge."));
+
+maps.push(new Map("Level 8",
+					["#####################",
+					 "#12............a.####",
+					 "#34.....a...........#",
+					 "#################...#",
+					 "##...a............#.#",
+					 "#.a.....a.....#####a#",
+					 "###.a.......#######.#",
+					 "###.###..a#########.#",
+					 "###..a...##########a#",
+					 "##r.......r.####r...#",
+					 "#.r.####r....####r.##",
+					 "###..r####...####..##",
+					 "##r.#####...#####..##",
+					 "###.r###...######..##",
+					 "##..####..###..#.r..#",
+					 "##r#####..###rr#....#",
+					 "##.##....#####..rr###",
+					 "##......#######..####",
+					 "#####################"],
+					{
+						"a": {unit: creatures.antWorker, level: 9},
+						"r": {unit: creatures.antWarrior, level: 7},
+					},
+					3,
+					"Autobuyer ToHit",
+					"The deeper you go, the stronger you feel - but the same can be said of your enemies.  Your torches flicker."));
+
+maps.push(new Map("Level 9",
 					["#################",
-					 "#12....a...a..###",
-					 "#34..........a.##",
-					 "#......a..a...###",
+					 "#12...#..r..#..##",
+					 "#34...##...###.##",
+					 "#......#...r...##",
+					 "#..#..a..###...##",
+					 "#..##..r.##....##",
+					 "##.a..a.....r.###",
+					 "#r.##.#.#....####",
+					 "#..a.r..#a##..###",
+					 "#.#....##.......#",
+					 "#r##..r....##.r.#",
+					 "#.###.##....#...#",
+					 "#r.##.r...r.#...#",
+					 "#####...#...#.r##",
+					 "###....r#.#r....#",
+					 "#r.r.###r##.#..##",
+					 "##.#...rr.....###",
+					 "#################"],
+					{
+						"a": {unit: creatures.antWorker, level: 10},
+						"r": {unit: creatures.antWarrior, level: 8},
+					},
+					2,
+					"Autobuyer Dodge",
+					"You continue cautiously into the dark.  Surely it won't be long before you manage to conquer this anthill."));
+
+maps.push(new Map("Level 10",
+					["#################",
+					 "#12........a..###",
+					 "#34......r...a.##",
+					 "#....rr..r....###",
 					 "#######....######",
 					 "#######....######",
 					 "#######a..a######",
@@ -357,11 +471,128 @@ maps.push(new Map("Level 6",
 					 "#####........####",
 					 "#######.qr.######",
 					 "#################"],
-					 {
-						 "a": {unit: creatures.antWorker, level: 7},
-						 "r": {unit: creatures.antWarrior, level: 5},
-						 "q": {unit: creatures.antQueen, level: 1},
-					 },
-					 4,
-					 "CriticalHit",
-					 "Hopefully conquering the anthill will mean that your way is clear from here on out."));
+					{
+						"a": {unit: creatures.antWorker, level: 11},
+						"r": {unit: creatures.antWarrior, level: 9},
+						"q": {unit: creatures.antQueen, level: 1},
+					},
+					4,
+					"CriticalHit",
+					"You are undeterred by the fierce resistance, glad to have broken through the anthill.  What's next?  You can't say."));
+
+maps.push(new Map("Level 11",
+					["###########",
+					 "#12....####",
+					 "#34....####",
+					 "#####..####",
+					 "#####..####",
+					 "#####..####",
+					 "###gg..gg##",
+					 "###g....g##",
+					 "####....###",
+					 "###g....g##",
+					 "###gg..gg##",
+					 "###########"],
+					{
+						"g": {unit: creatures.goblin, level: 4},
+					},
+					4,
+					"multiXp",
+					"Goblins.  Nasty little creatures that put up a fierce resistance.  Good thing your swords are sharper than theirs."));
+
+maps.push(new Map("Level 12",
+					["###########",
+					 "#12....####",
+					 "#34....####",
+					 "#####..####",
+					 "##........#",
+					 "##.######.#",
+					 "##...gg...#",
+					 "#####..####",
+					 "###gg..gg##",
+					 "###g....g##",
+					 "####....###",
+					 "###g....g##",
+					 "###gg..gg##",
+					 "###########"],
+					{
+						"g": {unit: creatures.goblin, level: 5},
+					},
+					4,
+					"Challenge LowDamage",
+					"You have a feeling these warrens will only get larger and more dangerous.  How deep are these caves?"));
+
+maps.push(new Map("Level 13",
+					["#################",
+					 "#12.......#######",
+					 "#34.......#######",
+					 "########..#######",
+					 "#####........####",
+					 "#####.#.##.#.####",
+					 "#####........####",
+					 "####...#ww#...###",
+					 "####.gg....gg.###",
+					 "#####g..ww..g####",
+					 "######......#####",
+					 "#####g.w..w.g####",
+					 "#####gg....gg####",
+					 "#################"],
+					{
+						"g": {unit: creatures.goblin, level: 6},
+						"w": {unit: creatures.warg, level: 3},
+					},
+					4,
+					"Autobuyer Block",
+					"Not the most inventive creatures, goblins.  You're starting to notice a pattern in their caves."));
+
+maps.push(new Map("Level 14",
+					["#################",
+					 "#12.......#######",
+					 "#34.......#######",
+					 "########..#######",
+					 "#####........####",
+					 "#####.#.##.#.####",
+					 "#####........####",
+					 "####...#ww#...###",
+					 "####.gg....gg.###",
+					 "#####g..ww..g####",
+					 "######......#####",
+					 "#####g......g####",
+					 "#####gg....gg####",
+					 "#######....######",
+					 "#######wggw######",
+					 "#######....######",
+					 "#################"],
+					{
+						"g": {unit: creatures.goblin, level: 7},
+						"w": {unit: creatures.warg, level: 4},
+					},
+					4,
+					"FasterTicks",
+					"These wargs are nasty creatures, capable of getting around your defences and difficult to pin down."));
+
+maps.push(new Map("Level 15",
+					["#################",
+					 "#12.......#######",
+					 "#34.......#######",
+					 "########..#######",
+					 "#####........####",
+					 "#####.#.##.#.####",
+					 "#####........####",
+					 "####...#ww#...###",
+					 "####.gg....gg.###",
+					 "#####g..ww..g####",
+					 "######......#####",
+					 "#####g......g####",
+					 "#####gg.w..gg####",
+					 "#######....######",
+					 "#######wggw######",
+					 "#######.ww.######",
+					 "#################"],
+					{
+						"g": {unit: creatures.goblin, level: 8},
+						"w": {unit: creatures.warg, level: 5},
+					},
+					4,
+					"Challenge LowHealth",
+					"You've started to wonder if there is actually tresure at the bottom of these caves."));

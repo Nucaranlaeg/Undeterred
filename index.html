@@ -3,15 +3,6 @@
 <html>
 	<head>
 		<title>Undeterred</title>
-		<script src="settings.js"></script>
-		<script src="ai.js"></script>
-		<script src="stat.js"></script>
-		<script src="unit.js"></script>
-		<script src="autobuyer.js"></script>
-		<script src="creatures.js"></script>
-		<script src="maps.js"></script>
-		<script src="messages.js"></script>
-		<script src="main.js"></script>
 		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
 	<body>
@@ -49,6 +40,12 @@
 			</div>
 			<div id="message-template" class="message">
 			</div>
+			<div id="challenge-template" class="challenge">
+				<div class="name"></div>
+				<div class="description"></div>
+				<div class="highest-floor"></div>
+				<div class="reward"></div>
+			</div>
 		</div>
 		<div class="col options-col">
 			<div class="col-header">Options</div>
@@ -56,7 +53,12 @@
 			<button id="auto-unselect" class="option-button" onclick="toggleSetting('autoUnselect')"></button>
 			<button id="autorun" class="option-button" onclick="toggleSetting('autorun')"></button>
 			<button id="auto-discard" class="option-button" onclick="toggleSetting('autoDiscard')"></button>
-			<button id="auto-buyer" class="option-button" onclick="toggleSetting('autoBuyer')"></button>
+			<button id="autobuyer" class="option-button" onclick="toggleSetting('autobuyer')"></button>
+			<button id="multi-xp" class="option-button" onclick="toggleSetting('multiXp')"></button>
+			<button id="stop-button" onclick="stopRun()">Exit Dungeon</button>
+			<button id="save-button" onclick="save()" title="Game saves automatically upon completing a floor.">Save Game</button>
+			<button id="export-button" onclick="exportGame()">Export</button>
+			<button id="import-button" onclick="importGame()">Import</button>
 			<div class="col-header">Messages</div>
 			<div id="messages"></div>
 		</div>
@@ -92,5 +94,35 @@
 			<div class="col-header">Enemy Creatures</div>
 			<div id="enemy-creatures"></div>
 		</div>
+		<div id="challenges-wrapper" class="col party-col">
+			<div class="col-header">Challenges</div>
+			<div id="challenges"></div>
+			<button id="exit-challenge" ondblclick="startChallenge(null)">Exit Challenge<br>(Double click)</button>
+		</div>
+		<div id="challenge-confirm" onclick="document.querySelector('#challenge-confirm').style.display = 'none'">
+			<div id="challenge-confirm-text" onclick="event.stopPropagation()">
+				<div class="relative-wrapper">
+					Really begin the <span id="challenge-confirm-name"></span> challenge?<br>
+					<br>
+					You will lose all of your current units and be subjected to additional restrictions based on the selected challenge.
+					You will keep all of your unlocks, and will gain a bonus based on the challenge and how many floors you conquer.
+					<div id="challenge-confirm-buttons">
+						<button class="confirm-button" id="challenge-confirm-accept">Confirm</button>
+						<button class="confirm-button" id="challenge-confirm-cancel">Cancel</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script src="settings.js"></script>
+		<script src="ai.js"></script>
+		<script src="stat.js"></script>
+		<script src="unit.js"></script>
+		<script src="autobuyer.js"></script>
+		<script src="creatures.js"></script>
+		<script src="maps.js"></script>
+		<script src="messages.js"></script>
+		<script src="challenges.js"></script>
+		<script src="main.js"></script>
+		<script src="save.js"></script>
 	</body>
 </html>

@@ -1,5 +1,3 @@
-console.log("Loading messages.js")
-
 let helpMessages = {
 	RemoveUnitsFromParty: ["Click on a unit to view it.  Click on an allied unit a second time to add it to your party or remove it from your party."],
 };

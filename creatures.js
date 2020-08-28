@@ -1,5 +1,3 @@
-console.log("Loading creatures.js")
-
 let creatures = {
 	antWorker: {
 		name: "Giant Ant Worker",
@@ -20,13 +18,34 @@ let creatures = {
 	},
 	antQueen: {
 		name: "Giant Ant Queen",
-		Health: 250,
-		Damage: 15,
-		ToHit: 15,
-		Dodge: 15,
-		Block: 6,
+		Health: 600,
+		Damage: 50,
+		ToHit: 50,
+		Dodge: 50,
+		Block: 15,
 		CriticalHit: 0.5,
 		CriticalDamage: 3,
 		xp: 10,
+	},
+	goblin: {
+		name: "Goblin",
+		Health: 80,
+		Damage: 12,
+		ToHit: 10,
+		Dodge: 6,
+		CriticalHit: 0.05,
+		xp: 3,
+		ai: "Grouping",
+	},
+	warg: {
+		name: "Warg",
+		Health: 40,
+		Damage: 20,
+		ToHit: 5,
+		Dodge: 25,
+		Block: 3,
+		Haste: 0.1,
+		xp: 2,
+		ai: "Grouping",
 	},
 }

@@ -1,18 +1,21 @@
-console.log("Loading main.js")
-
 let playerSymbols = ["&nbsp;♥", "&nbsp;♦", "&nbsp;♣", "&nbsp;♠"];
 let playerUnits = [];
 let currentLevel = 0;
 let maxUnits = 10;
 let tickInterval = null;
 let loopCount = 0;
-let TICK_TIME = 250;
+let tickTime = 250;
 let selectedUnit = null;
-let autoBuyerUnit = new AutoBuyerUnit();
 let baseStats = {
 	Health: 50,
 	Damage: 5,
 };
+let autobuyerUnit = new AutobuyerUnit();
+let autobuyComplete = false;
+// To be implemented; speeds up ticks to make up for missed time.
+let fastTime = 0;
+let base_stat_value = 211;
+let bestLevel = 0;
 
 function beginRun(){
 	if (tickInterval) return;
@@ -31,7 +34,7 @@ function beginRun(){
 		}
 	}
 	let partyUnits = playerUnits.filter(unit => unit.active);
-	if (partyUnits.length > 3){
+	if (partyUnits.length > 3 || (activeChallenge && activeChallenge.name == "Two Units" && partyUnits.length > 1)){
 		if (settings.autoUnselect == "Total"){
 			let minXP = playerUnits.reduce((a, unit) => unit.active && (xp = unit.getStatValue()) < a ? xp : a, Infinity);
 			playerUnits.find(unit => unit.active && unit.getStatValue() == minXP).active = false;
@@ -51,14 +54,15 @@ function beginRun(){
 		unit.refillHealth();
 		unit.character = playerSymbols[i+1];
 	})
-	let newPlayerUnit = new Unit(true, "You", baseStats, "simple", true, loopCount);
+	let newPlayerUnit = new Unit(true, "You", baseStats, "Simple", true, loopCount);
 	newPlayerUnit.character = playerSymbols[0];
 	playerUnits.push(newPlayerUnit);
 	displayCurrentUnit();
 	displayAllUnits();
 	currentLevel = 0;
+	autobuyComplete = false;
 	loadNextMap();
-	tickInterval = setInterval(runTick, TICK_TIME);
+	tickInterval = setInterval(runTick, tickTime);
 }
 
 function loadNextMap(){
@@ -70,6 +74,9 @@ function loadNextMap(){
 	maps[currentLevel].draw();
 	maps[currentLevel].drawCreatures(partyUnits);
 	maps[currentLevel].getVision(partyUnits);
+	if (currentLevel > bestLevel){
+		bestLevel = currentLevel;
+	}
 }
 
 function displayCurrentUnit(){
@@ -109,18 +116,19 @@ function displayAllUnits(){
 	playerUnits.forEach(unit => {
 		let unitEl = unitSummaryTemplate.cloneNode(true);
 		unitEl.removeAttribute("id");
-		unitEl.querySelector(".total-xp").innerHTML = unit.getStatValue();
-		unitEl.querySelector(".spendable-xp").innerHTML = unit.xp;
+		unitEl.querySelector(".total-xp").innerHTML = Math.floor(unit.getStatValue());
+		unitEl.querySelector(".spendable-xp").innerHTML = Math.floor(unit.xp);
 		unitEl.querySelector(".character").innerHTML = unit.character;
 		unit.updateXP = () => {
-			unitEl.querySelector(".total-xp").innerHTML = unit.getStatValue();
-			unitEl.querySelector(".spendable-xp").innerHTML = unit.xp;
+			unitEl.querySelector(".total-xp").innerHTML = Math.floor(unit.getStatValue());
+			unitEl.querySelector(".spendable-xp").innerHTML = Math.floor(unit.xp);
 		}
 		unitEl.querySelector(".loop-count").innerHTML = unit.loopNumber;
 		unitEl.querySelector(".removal").innerHTML = unit.preventRemoval ? "Cannot be forgotten" : "Can be forgotten";
 		let showKillButton = () => {
 			unitEl.querySelector(".kill-button").style.display = unit.preventRemoval ? "none" : "block";
 		}
+		showKillButton();
 		if (unit.active){
 			unitEl.classList.add("active");
 		}
@@ -169,32 +177,45 @@ function applyReward(reward){
 		displayMessage(`You have unlocked the ${reward} setting!`);
 		displaySettings();
 	} else if (reward == "FasterTicks") {
-		TICK_TIME -= 50;
+		tickTime -= 50;
 		// It really shouldn't ever drop this low, but just in case...
-		if (TICK_TIME < 100) TICK_TIME = 100;
+		if (tickTime < 100) tickTime = 100;
 		displayMessage(`Ticks are now faster!`);
-	} else if (reward == "AutoBuyer") {
-		displayMessage(`You have unlocked the Auto Buyer!`);
-		autoBuyer = true;
+	} else if (reward.split(" ")[0] == "Autobuyer") {
+		let stat = reward.split(" ")[1];
+		displayMessage(`You have unlocked the Autobuyer for ${stat}!`);
+		if (lockedSettings["autobuyer"]){
+			displayMessage(`Decrease autobuyer values by right-clicking on the relevant stat.`);
+		}
+		lockedSettings["autobuyer"] = false;
+		displaySettings();
+		autobuyerUnit.unlock(stat);
+	} else if (reward.split(" ")[0] == "Challenge") {
+		let challenge = reward.split(" ")[1];
+		displayMessage(`You have unlocked the ${challenge} challenge!`);
+		settings.showChallenges = true;
+		challenges[challenge].locked = false;
+		displayChallenges();
 	}
 }
 
 function runTick(){
 	let partyUnits = playerUnits.filter(unit => unit.active);
-	partyUnits.forEach(unit => unit.tick(maps[currentLevel]));
+	partyUnits.forEach(unit => unit.tick());
 	maps[currentLevel].tick(partyUnits);
 	if (maps[currentLevel].checkComplete()){
+		grantXp(challenges.TwoUnits.bestFloor);
+		displayChallenges();
 		currentLevel++;
 		loadNextMap();
+		save();
 	}
 	displayCurrentUnitStatus();
 	displayEnemyUnits();
 	if (selectedUnit){
 		selectedUnit.displayStatus();
 	}
-	if (playerUnits.every(unit => unit.dead)){
-		clearInterval(tickInterval);
-		tickInterval = null;
+	if (playerUnits.every(unit => unit.dead || !unit.active)){
 		endRun();
 	}
 }
@@ -204,14 +225,29 @@ function grantXp(xp){
 	currentUnit.onKill(xp);
 }
 
-function endRun(){
+function stopRun(){
 	document.querySelector("#start-button").classList.remove("running");
 	maps[currentLevel].uninstantiate();
-	playerUnits.find(unit => unit.current).current = false;
+	(playerUnits.find(unit => unit.current) || []).current = false;
 	playerUnits.forEach(unit => unit.character = "");
+	currentLevel = 0;
+	clearInterval(tickInterval);
+	tickInterval = null;
+	displayAllUnits();
+	save();
+}
+
+function endRun(){
+	stopRun();
 	if (settings.autorun) beginRun();
 }
 
+function calculateBaseStatValue(){
+	base_stat_value += (new Unit(true, "", baseStats)).getSpentStatValue();
+}
+calculateBaseStatValue();
+
 setTimeout(() => {
 	displaySettings();
+	displayChallenges();
 });

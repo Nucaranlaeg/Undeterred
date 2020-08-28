@@ -1,5 +1,3 @@
-console.log("Loading ai.js")
-
 class AI {
 	constructor(name, description){
 		this.name = name;
@@ -11,7 +9,7 @@ class AI {
 
 class AISimple extends AI {
 	constructor(){
-		super("Simple", "Moves toward the nearest enemy or the nearest unexplored area.");
+		super("Simple", "Moves toward the nearest accessible enemy or the nearest unexplored area.");
 	}
 	
 	move(map, unit){
@@ -28,7 +26,7 @@ class AISimple extends AI {
 		}
 		if (targetUnits.length == 0){
 			// Move to the nearest unexplored area.
-			let [x, y] = breadthFirstSearch(map, unit.x, unit.y, (x, y) => !map.isVisibleSpace(x, y));
+			let [x, y] = breadthFirstSearch(map, unit.x, unit.y, (x, y) => !map.isVisibleSpace(x, y), false);
 			return {
 				type: "move",
 				x: x,
@@ -36,7 +34,7 @@ class AISimple extends AI {
 			};
 		}
 		// Attempt to attack, attacking a random unit.
-		let attackableUnits = targetUnits.filter(target => Math.abs(target.x - unit.x) + Math.abs(target.y - unit.y) == 1);
+		let attackableUnits = targetUnits.filter(target => Math.abs(target.x - unit.x) + Math.abs(target.y - unit.y) <= unit.stats.Range.value);
 		if (attackableUnits.length > 0){
 			return {
 				type: "attack",
@@ -44,7 +42,7 @@ class AISimple extends AI {
 			};
 		}
 		// Move to the nearest enemy unit.
-		let [x, y] = breadthFirstSearch(map, unit.x, unit.y, (x, y) => targetUnits.some(target => target.x == x && target.y == y));
+		let [x, y] = breadthFirstSearch(map, unit.x, unit.y, (x, y) => targetUnits.some(target => target.x == x && target.y == y), false);
 		if (x !== unit.x || y !== unit.y){
 			return {
 				type: "move",
@@ -53,7 +51,7 @@ class AISimple extends AI {
 			};
 		}
 		// Move to the nearest unexplored area.
-		[x, y] = breadthFirstSearch(map, unit.x, unit.y, (x, y) => !map.isVisibleSpace(x, y));
+		[x, y] = breadthFirstSearch(map, unit.x, unit.y, (x, y) => !map.isVisibleSpace(x, y), false);
 		return {
 			type: "move",
 			x: x,
@@ -62,7 +60,46 @@ class AISimple extends AI {
 	}
 }
 
-function breadthFirstSearch(map, x, y, isTarget){
+class AIGrouping extends AI {
+	constructor(){
+		super("Grouping", "Moves toward the nearest enemy, even if there's an ally in between.");
+	}
+	
+	move(map, unit){
+		let targetUnits = [];
+		if (unit.playerOwned){
+			targetUnits = map.getVisibleEnemies();
+		} else {
+			if (!map.isVisible(unit)) return {};
+			targetUnits = playerUnits.filter(unit => !unit.dead && unit.active);
+			if (targetUnits.length == 0){
+				// If all the player units are dead, don't crash.
+				return {};
+			}
+		}
+		// Attempt to attack, attacking a random unit.
+		let attackableUnits = targetUnits.filter(target => Math.abs(target.x - unit.x) + Math.abs(target.y - unit.y) == unit.stats.Range.value);
+		if (attackableUnits.length > 0){
+			return {
+				type: "attack",
+				enemy: attackableUnits[Math.floor(Math.random() * attackableUnits.length)],
+			};
+		}
+		// Move to the nearest enemy unit (or an unexplored space, if a player unit).
+		let [x, y] = breadthFirstSearch(map, unit.x, unit.y, (x, y) => targetUnits.some(target => target.x == x && target.y == y) || (!unit.playerOwned && !map.isVisibleSpace(x, y)), true);
+		// If there's a creature in the way, move randomly.
+		if (!map.isEmpty(x, y, false)){
+			return moveRandomly(map, unit.x, unit.y);
+		}
+		return {
+			type: "move",
+			x: x,
+			y: y,
+		};
+	}
+}
+
+function breadthFirstSearch(map, x, y, isTarget, ignoreCreatures){
 	let possibleMoves = [
 		[x+1, y, x+1, y],
 		[x, y+1, x, y+1],
@@ -85,13 +122,38 @@ function breadthFirstSearch(map, x, y, isTarget){
 			if (examined.has(positionString)) continue;
 			examined.add(positionString);
 			if (isTarget(currentx + deltax, currenty + deltay)) return [movex, movey];
-			if (map.isEmpty(currentx + deltax, currenty + deltay)) possibleMoves.push([movex, movey, currentx + deltax, currenty + deltay]);
+			if (map.isEmpty(currentx + deltax, currenty + deltay, ignoreCreatures)) possibleMoves.push([movex, movey, currentx + deltax, currenty + deltay]);
 		}
 	}
 	// Fail by just returning no move.
 	return [x, y];
 }
 
-let ais = {
-	simple: new AISimple(),
+function moveRandomly(map, x, y){
+	let moves = [
+		[x + 1, y],
+		[x - 1, y],
+		[x, y + 1],
+		[x, y - 1],
+	];
+	shuffle(moves);
+	for (let i = 0; i < 4; i++){
+		if (map.isEmpty(moves[i][0], moves[i][1], false)){
+			return {
+				type: "move",
+				x: moves[i][0],
+				y: moves[i][1],
+			};
+		}
+	}
+	return {
+		type: "move",
+		x,
+		y,
+	};
 }
+
+let ais = {
+	Simple: new AISimple(),
+	Grouping: new AIGrouping(),
+};

@@ -1,9 +1,5 @@
-console.log("Loading unit.js")
-
-const BASE_STAT_VALUE = 210;
-
 class Unit {
-	constructor(playerOwned, name, stats, ai = "simple", current = false, loopNumber = 0){
+	constructor(playerOwned, name, stats, ai = "Simple", current = false, loopNumber = 0){
 		this.name = name;
 		// Which loop this unit was created on.
 		this.loopNumber = loopNumber;
@@ -26,8 +22,11 @@ class Unit {
 			Block: new Block(0),
 			Protection: new Protection(0),
 			Vampirism: new Vampirism(0),
+			// Other
+			Range: new Range(1),
 			// Non-Combat
 			Regeneration: new Regeneration(0),
+			Haste: new Haste(0),
 		};
 		for (const [key, value] of Object.entries(stats)){
 			if (!this.stats[key]) continue;
@@ -83,7 +82,7 @@ class Unit {
 	}
 
 	getSpentStatValue(){
-		return Object.values(this.stats).reduce((a, stat) => a + stat.getXpAmount(), 0) - BASE_STAT_VALUE;
+		return Object.values(this.stats).reduce((a, stat) => a + stat.getXpAmount(), 0) - base_stat_value;
 	}
 
 	breakCap(stat){
@@ -96,11 +95,11 @@ class Unit {
 		this.display();
 	}
 
-	spendXp(stat, isCurrent){
+	spendXp(stat, isCurrent, event, amount){
 		if (this.xp >= 1){
-			this.xp -= 1 - this.stats[stat].gainXp(1);
+			let xpToSpend = Math.min(this.xp, amount || settings.multiXp);
+			this.xp -= xpToSpend - this.stats[stat].gainXp(xpToSpend);
 		}
-		// Assumes that this is the selected unit when upgrading.
 		this.display(isCurrent);
 		this.updateXP();
 	}
@@ -127,8 +126,6 @@ class Unit {
 				statEl.querySelector(".name").innerHTML = stat.name;
 				if (stat.capIncrease){
 					statEl.querySelector(".cap-increase").onclick = this.breakCap.bind(this, stat.getQualifiedName(), this.current);
-				} else {
-					statEl.querySelector(".cap-increase").style.display = "none";
 				}
 				statEl.onclick = this.spendXp.bind(this, stat.getQualifiedName(), this.current || forceCurrent);
 				if (stat.name == "Health"){
@@ -137,8 +134,8 @@ class Unit {
 					current.classList.add("current");
 				}
 			}
-			statEl.querySelector(".cap-increase").style.display = this.capBreakers ? "inline" : "none";
-			statEl.querySelector(".value").innerHTML = stat.isPercent ? (stat.value * 100) + "%" : stat.value;
+			statEl.querySelector(".cap-increase").style.display = this.capBreakers && stat.capIncrease ? "inline" : "none";
+			statEl.querySelector(".value").innerHTML = formatNumber(stat.isPercent ? stat.value * 100 : stat.value) + (stat.isPercent ? "%" : "");
 			statEl.querySelector(".description").innerHTML = stat.description;
 			if (stat.cap !== Infinity){
 				statEl.querySelector(".cap").innerHTML = "(" + (stat.isPercent ? (stat.cap * 100) + "%" : stat.cap) + ")";
@@ -152,10 +149,11 @@ class Unit {
 		unitElWrapper.querySelector(".xp-amount").innerHTML = Math.floor(this.xp);
 		unitElWrapper.querySelector(".cap-breakers").innerHTML = this.capBreakers;
 		unitElWrapper.querySelector(".ai").innerHTML = this.ai.name;
-		document.querySelector(`#${this.current || forceCurrent ? "current" : "other"}-unit .Health .current`).style.width = `${100 * this.stats.Health.current / this.stats.Health.value}%`;
 		if (!this.dead){
+			document.querySelector(`#${this.current || forceCurrent ? "current" : "other"}-unit .Health .current`).style.width = `${100 * this.stats.Health.current / this.stats.Health.value}%`;
 			maps[currentLevel].highlight(this.current || forceCurrent ? 1 : 0, this.x, this.y);
 		} else {
+			document.querySelector(`#${this.current || forceCurrent ? "current" : "other"}-unit .Health .current`).style.width = `0%`;
 			maps[currentLevel].noHighlight(this.current || forceCurrent ? 1 : 0);
 		}
 	}
@@ -168,13 +166,33 @@ class Unit {
 		this.xp += killStats.xp;
 		// Fix rounding errors.  0.005 is the smallest increment of xp you can gain, so once we get past that we know we can round up.
 		if (this.xp % 1 > 0.999) this.xp = Math.ceil(this.xp);
+		this.autobuy();
 		this.updateXP();
+	}
+
+	// Check if autobuying is needed, and if so, do it.
+	autobuy(){
+		if (!settings.autobuyer) return;
+		let autobuyStats = Object.keys(autobuyerUnit.stats);
+		shuffle(autobuyStats);
+		let index = 0;
+		while (this.xp > 0 && autobuyStats.length){
+			if (autobuyerUnit.stats[autobuyStats[index]].value > this.stats[autobuyStats[index]].value){
+				this.spendXp(autobuyStats[index], true, null, 1);
+			} else {
+				autobuyStats.splice(index, 1);
+			}
+			index = (index + 1) % autobuyStats.length;
+		}
+		if (this.xp > 0){
+			autobuyComplete = true;
+		}
 	}
 
 	// Update the total/free xp in the party list.
 	updateXP(){}
 
-	tick(){
+	tick(extraTicks = null){
 		if (this.dead) return;
 		let move = this.ai.move(maps[currentLevel], this);
 		if (move.type == "attack"){
@@ -183,9 +201,31 @@ class Unit {
 			this.x = move.x;
 			this.y = move.y;
 		}
+		if (extraTicks === null){
+			extraTicks = this.stats.Haste.getTicks();
+		}
+		if (extraTicks > 0){
+			return this.tick(extraTicks - 1);
+		}
 	}
 
 	refillHealth(){
 		this.stats.Health.current = this.stats.Health.value;
 	}
+}
+
+// Utility function
+function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+function formatNumber(number){
+	if (Math.abs(Math.round(number) - number) < 0.01){
+		return Math.round(number);
+	}
+	return Math.round(number * 10) / 10;
 }
