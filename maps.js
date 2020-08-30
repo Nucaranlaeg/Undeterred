@@ -216,11 +216,12 @@ const classMapping = {
 *	9	45	225
 *	10	50	275
 *	*********GOBLINS*********
-*	11	42	317
-*	12	48	365
-*	13	54	419
-*	14	60	479
-*	15	66	545
+*	11	36	311
+*	12	42	353
+*	13	48	401
+*	14	54	455
+*	15	60	515
+*	16	66	581
 */
 
 maps.push(new Map("Level 1",
@@ -595,4 +596,30 @@ maps.push(new Map("Level 15",
 					},
 					4,
 					"Challenge LowHealth",
-					"You've started to wonder if there is actually tresure at the bottom of these caves."));
+					"You've started to wonder if there is actually treasure at the bottom of these caves."));
+
+maps.push(new Map("Level 16",
+					["#################",
+					 "#12.......#######",
+					 "#34.......#######",
+					 "########..#######",
+					 "#####........####",
+					 "#####.#.##.#.####",
+					 "#####........####",
+					 "####...#ww#...###",
+					 "####.gg....gg.###",
+					 "#####g..ww..g####",
+					 "###............##",
+					 "##..#g......g#..#",
+					 "##g##gg.w..gg##g#",
+					 "#######....######",
+					 "#######wggw######",
+					 "#######.ww.######",
+					 "#################"],
+					{
+						"g": {unit: creatures.goblin, level: 9},
+						"w": {unit: creatures.warg, level: 6},
+					},
+					4,
+					"AI Grouping",
+					"There are things that you can learn from the goblins.  You question your sanity - the goblins are barely sapient, after all."));

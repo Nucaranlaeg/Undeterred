@@ -25,8 +25,8 @@ class Challenge {
 let activeChallenge = null;
 
 let challenges = {
-	LowDamage: new Challenge("Low Damage", "Clear floors without the ability to increase your damage.", gainBase("Damage", 1), "+1 Damage / floor", ["Damage", "Critical Hit", "Critical Damage"]),
-	LowHealth: new Challenge("Low Health", "Clear floors without the ability to increase your health.", gainBase("Health", 10), "+1 Health / floor", ["Health"]),
+	LowDamage: new Challenge("Low Damage", "Clear floors without the ability to increase your damage.", gainBase("Damage", 2), "+2 Damage / floor", ["Damage", "Critical Hit", "Critical Damage"]),
+	LowHealth: new Challenge("Low Health", "Clear floors without the ability to increase your health.", gainBase("Health", 25), "+25 Health / floor", ["Health"]),
 	TwoUnits: new Challenge("Two Units", "Clear floors, but you can only have two units at a time.", ()=>{}, "+1 XP / floor each floor", []),
 };
 
@@ -34,7 +34,7 @@ function gainBase(stat, value){
 	return () => {
 		baseStats[stat] += value;
 		playerUnits.forEach(unit => unit.stats[stat].value += value);
-		autobuyerUnit.stats[stat].value = Math.min(autobuyerUnit.stats[stat].value, baseStats[stat]);
+		autobuyerUnit.stats[stat].value = Math.max(autobuyerUnit.stats[stat].value, baseStats[stat]);
 		calculateBaseStatValue();
 		displayCurrentUnit();
 		if (selectedUnit){

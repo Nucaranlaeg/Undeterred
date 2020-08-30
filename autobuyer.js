@@ -10,6 +10,9 @@ class AutobuyerUnit extends Unit {
 
 	unspendXp(stat){
 		this.stats[stat].gainXp(-settings.multiXp);
+		if (this.stats[stat].value < baseStats[stat]) {
+			this.stats[stat].value = baseStats[stat];
+		}
 		this.display(false);
 		this.updateXP();
 	}

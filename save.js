@@ -93,6 +93,7 @@ function load(){
 
 	// Do setup
 	if (currentLevel > 0){
+		calculateBaseStatValue();
 		partyUnits = playerUnits.filter(unit => unit.active);
 		partyUnits.forEach((unit, i) => {
 			unit.character = playerSymbols[(i+1) % 4];

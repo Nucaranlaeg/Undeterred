@@ -75,6 +75,9 @@ class Unit {
 			grantXp(this.xp);
 		}
 		this.dead = true;
+		if (this == selectedUnit){
+			maps[currentLevel].noHighlight(0);
+		}
 	}
 
 	getStatValue(){
@@ -111,6 +114,13 @@ class Unit {
 		} else {
 			document.querySelector(this.current || forceCurrent ? "#current-unit-wrapper .col-header" : "#other-unit-wrapper .col-header").innerHTML = this.name;
 		}
+		document.querySelector(this.current || forceCurrent ? "#current-unit-wrapper .ai" : "#other-unit-wrapper .ai").onchange = e => {
+			if (this.playerOwned){
+				this.ai = ais[e.target.value];
+			} else {
+				e.target.value = this.ai.name;
+			}
+		};
 		let unitEl = document.querySelector(this.current || forceCurrent ? "#current-unit" : "#other-unit");
 		while (unitEl.firstChild){
 			unitEl.removeChild(unitEl.lastChild);
@@ -148,7 +158,7 @@ class Unit {
 		let unitElWrapper = document.querySelector(this.current || forceCurrent ? "#current-unit-wrapper" : "#other-unit-wrapper");
 		unitElWrapper.querySelector(".xp-amount").innerHTML = Math.floor(this.xp);
 		unitElWrapper.querySelector(".cap-breakers").innerHTML = this.capBreakers;
-		unitElWrapper.querySelector(".ai").innerHTML = this.ai.name;
+		unitElWrapper.querySelector(".ai").value = this.ai.name;
 		if (!this.dead){
 			document.querySelector(`#${this.current || forceCurrent ? "current" : "other"}-unit .Health .current`).style.width = `${100 * this.stats.Health.current / this.stats.Health.value}%`;
 			maps[currentLevel].highlight(this.current || forceCurrent ? 1 : 0, this.x, this.y);

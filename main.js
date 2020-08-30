@@ -16,6 +16,12 @@ let autobuyComplete = false;
 let fastTime = 0;
 let base_stat_value = 211;
 let bestLevel = 0;
+let lastAi = "Simple";
+
+function calculateBaseStatValue(){
+	base_stat_value += (new Unit(true, "", baseStats)).getSpentStatValue();
+}
+calculateBaseStatValue();
 
 function beginRun(){
 	if (tickInterval) return;
@@ -54,7 +60,7 @@ function beginRun(){
 		unit.refillHealth();
 		unit.character = playerSymbols[i+1];
 	})
-	let newPlayerUnit = new Unit(true, "You", baseStats, "Simple", true, loopCount);
+	let newPlayerUnit = new Unit(true, "You", baseStats, lastAi, true, loopCount);
 	newPlayerUnit.character = playerSymbols[0];
 	playerUnits.push(newPlayerUnit);
 	displayCurrentUnit();
@@ -196,6 +202,14 @@ function applyReward(reward){
 		settings.showChallenges = true;
 		challenges[challenge].locked = false;
 		displayChallenges();
+	} else if (reward.split(" ")[0] == "AI") {
+		let ai = reward.split(" ")[1];
+		displayMessage(`You have unlocked the ${ai} ai option!`);
+		ais[ai].locked = false;
+		displayCurrentUnitStatus();
+		if (selectedUnit){
+			selectedUnit.displayStatus();
+		}
 	}
 }
 
@@ -228,7 +242,11 @@ function grantXp(xp){
 function stopRun(){
 	document.querySelector("#start-button").classList.remove("running");
 	maps[currentLevel].uninstantiate();
-	(playerUnits.find(unit => unit.current) || []).current = false;
+	let currentUnit = playerUnits.find(unit => unit.current);
+	if (currentUnit) {
+		currentUnit.current = false;
+		lastAi = currentUnit.ai.name;
+	}
 	playerUnits.forEach(unit => unit.character = "");
 	currentLevel = 0;
 	clearInterval(tickInterval);
@@ -241,11 +259,6 @@ function endRun(){
 	stopRun();
 	if (settings.autorun) beginRun();
 }
-
-function calculateBaseStatValue(){
-	base_stat_value += (new Unit(true, "", baseStats)).getSpentStatValue();
-}
-calculateBaseStatValue();
 
 setTimeout(() => {
 	displaySettings();

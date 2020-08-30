@@ -1,7 +1,8 @@
 class AI {
-	constructor(name, description){
+	constructor(name, description, locked = true){
 		this.name = name;
 		this.description = description;
+		this.locked = locked;
 	}
 	
 	move(map, unit){}
@@ -9,7 +10,7 @@ class AI {
 
 class AISimple extends AI {
 	constructor(){
-		super("Simple", "Moves toward the nearest accessible enemy or the nearest unexplored area.");
+		super("Simple", "Moves toward the nearest accessible enemy or the nearest unexplored area.", false);
 	}
 	
 	move(map, unit){
@@ -157,3 +158,22 @@ let ais = {
 	Simple: new AISimple(),
 	Grouping: new AIGrouping(),
 };
+
+function fillAIDropdown(){
+	let selectEls = document.querySelectorAll(".ai");
+	for (const [key, value] of Object.entries(ais)){
+		let aiEl = document.createElement("option");
+		aiEl.value = key;
+		aiEl.innerHTML = key;
+		if (value.locked){
+			aiEl.disabled = true;
+		} else {
+			aiEl.title = value.description;
+		}
+		selectEls.forEach(el => {
+			el.append(aiEl.cloneNode(true));
+		});
+	}
+}
+
+fillAIDropdown();

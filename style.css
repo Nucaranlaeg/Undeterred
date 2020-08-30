@@ -387,3 +387,14 @@ td.highlight-0 {
 .challenge.running {
     background-color: #220055;
 }
+
+.ai {
+	float: right;
+	background-color: #ffffff40;
+	border: 2px #ffffff30;
+	color: white;
+}
+
+.ai option {
+	background-color: #404040;
+}
