@@ -122,6 +122,11 @@ body * {
 	text-align: center;
 }
 
+#map-reward {
+	font-size: 14px;
+	text-align: center;
+}
+
 td {
 	width: 1em;
 	height: 1em;
@@ -131,7 +136,7 @@ td {
 	font-size: inherit;
 }
 
-td:after {
+td::after {
 	padding: 2px;
 	display: none;
 	position: absolute;
@@ -148,8 +153,25 @@ td:after {
 	font-size: 16px;
 }
 
-td:hover:after {
+td:hover::after {
 	display: block;
+}
+
+td.health-bar::before {
+	display: block;
+	position: absolute;
+	top: 0;
+	right: 0;
+	height: 2px;
+	width: attr(data-health);
+	z-index: 50;
+	pointer-events: none;
+	background-color: #ff000090;
+	content: " ";
+}
+
+td.highlight-0.health-bar::before {
+	background-color: #ff0000;
 }
 
 td.tunnel {
@@ -158,6 +180,10 @@ td.tunnel {
 
 td.wall {
 	background-color: #611b1b;
+}
+
+td.pit {
+	background-color: #000000;
 }
 
 td.stairs {
@@ -208,8 +234,8 @@ td.not-visible {
 
 .character {
 	position: absolute;
-	top: 2px;
-	left: 2px;
+	top: 4px;
+	left: -1px;
 	width: 15px;
 	height: 15px;
 	line-height: 11px;
@@ -287,12 +313,30 @@ td.not-visible {
 }
 
 td.highlight-0 {
-	background-color: #a00000;
+	background-color: #0000a0;
 }
 
-/* td.highlight-1 {
-	background-color: #00a000;
-} */
+.cap-breaker {
+	position: relative;
+}
+
+.cap-breaker-desc {
+	position: absolute;
+	top: 15px;
+	left: 15px;
+	display: none;
+}
+
+.cap-breaker:hover .cap-breaker-desc {
+	display: block;
+	border: 2px solid #555555;
+	border-radius: 5px;
+	background-color: #444444;
+	z-index: 5;
+	padding: 5px;
+	width: 136px;
+	pointer-events: none;
+}
 
 #messages {
 	width: calc(100% - 8px);
@@ -398,3 +442,106 @@ td.highlight-0 {
 .ai option {
 	background-color: #404040;
 }
+
+/* For setting health bars above units */
+
+[data-health='1%']::before { width: 1%; }
+[data-health='2%']::before { width: 2%; }
+[data-health='3%']::before { width: 3%; }
+[data-health='4%']::before { width: 4%; }
+[data-health='5%']::before { width: 5%; }
+[data-health='6%']::before { width: 6%; }
+[data-health='7%']::before { width: 7%; }
+[data-health='8%']::before { width: 8%; }
+[data-health='9%']::before { width: 9%; }
+[data-health='10%']::before { width: 10%; }
+[data-health='11%']::before { width: 11%; }
+[data-health='12%']::before { width: 12%; }
+[data-health='13%']::before { width: 13%; }
+[data-health='14%']::before { width: 14%; }
+[data-health='15%']::before { width: 15%; }
+[data-health='16%']::before { width: 16%; }
+[data-health='17%']::before { width: 17%; }
+[data-health='18%']::before { width: 18%; }
+[data-health='19%']::before { width: 19%; }
+[data-health='20%']::before { width: 20%; }
+[data-health='21%']::before { width: 21%; }
+[data-health='22%']::before { width: 22%; }
+[data-health='23%']::before { width: 23%; }
+[data-health='24%']::before { width: 24%; }
+[data-health='25%']::before { width: 25%; }
+[data-health='26%']::before { width: 26%; }
+[data-health='27%']::before { width: 27%; }
+[data-health='28%']::before { width: 28%; }
+[data-health='29%']::before { width: 29%; }
+[data-health='30%']::before { width: 30%; }
+[data-health='31%']::before { width: 31%; }
+[data-health='32%']::before { width: 32%; }
+[data-health='33%']::before { width: 33%; }
+[data-health='34%']::before { width: 34%; }
+[data-health='35%']::before { width: 35%; }
+[data-health='36%']::before { width: 36%; }
+[data-health='37%']::before { width: 37%; }
+[data-health='38%']::before { width: 38%; }
+[data-health='39%']::before { width: 39%; }
+[data-health='40%']::before { width: 40%; }
+[data-health='41%']::before { width: 41%; }
+[data-health='42%']::before { width: 42%; }
+[data-health='43%']::before { width: 43%; }
+[data-health='44%']::before { width: 44%; }
+[data-health='45%']::before { width: 45%; }
+[data-health='46%']::before { width: 46%; }
+[data-health='47%']::before { width: 47%; }
+[data-health='48%']::before { width: 48%; }
+[data-health='49%']::before { width: 49%; }
+[data-health='50%']::before { width: 50%; }
+[data-health='51%']::before { width: 51%; }
+[data-health='52%']::before { width: 52%; }
+[data-health='53%']::before { width: 53%; }
+[data-health='54%']::before { width: 54%; }
+[data-health='55%']::before { width: 55%; }
+[data-health='56%']::before { width: 56%; }
+[data-health='57%']::before { width: 57%; }
+[data-health='58%']::before { width: 58%; }
+[data-health='59%']::before { width: 59%; }
+[data-health='60%']::before { width: 60%; }
+[data-health='61%']::before { width: 61%; }
+[data-health='62%']::before { width: 62%; }
+[data-health='63%']::before { width: 63%; }
+[data-health='64%']::before { width: 64%; }
+[data-health='65%']::before { width: 65%; }
+[data-health='66%']::before { width: 66%; }
+[data-health='67%']::before { width: 67%; }
+[data-health='68%']::before { width: 68%; }
+[data-health='69%']::before { width: 69%; }
+[data-health='70%']::before { width: 70%; }
+[data-health='71%']::before { width: 71%; }
+[data-health='72%']::before { width: 72%; }
+[data-health='73%']::before { width: 73%; }
+[data-health='74%']::before { width: 74%; }
+[data-health='75%']::before { width: 75%; }
+[data-health='76%']::before { width: 76%; }
+[data-health='77%']::before { width: 77%; }
+[data-health='78%']::before { width: 78%; }
+[data-health='79%']::before { width: 79%; }
+[data-health='80%']::before { width: 80%; }
+[data-health='81%']::before { width: 81%; }
+[data-health='82%']::before { width: 82%; }
+[data-health='83%']::before { width: 83%; }
+[data-health='84%']::before { width: 84%; }
+[data-health='85%']::before { width: 85%; }
+[data-health='86%']::before { width: 86%; }
+[data-health='87%']::before { width: 87%; }
+[data-health='88%']::before { width: 88%; }
+[data-health='89%']::before { width: 89%; }
+[data-health='90%']::before { width: 90%; }
+[data-health='91%']::before { width: 91%; }
+[data-health='92%']::before { width: 92%; }
+[data-health='93%']::before { width: 93%; }
+[data-health='94%']::before { width: 94%; }
+[data-health='95%']::before { width: 95%; }
+[data-health='96%']::before { width: 96%; }
+[data-health='97%']::before { width: 97%; }
+[data-health='98%']::before { width: 98%; }
+[data-health='99%']::before { width: 99%; }
+[data-health='100%']::before { width: 100%; }

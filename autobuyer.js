@@ -1,6 +1,6 @@
 class AutobuyerUnit extends Unit {
 	constructor() {
-		super(false, "Autobuyer", {}, "");
+		super(true, "Autobuyer", {}, "Simple");
 		this.xp = Infinity;
 		this.capBreakers = Infinity;
 		this.capBreakersUsed = 0;
@@ -17,6 +17,18 @@ class AutobuyerUnit extends Unit {
 		this.updateXP();
 	}
 
+	breakCap(stat, isCurrent, event){
+		this.capBreakersUsed++;
+		super.breakCap(stat, isCurrent, event);
+	}
+
+	unBreakCap(stat, isCurrent, event){
+		if (super.unBreakCap(stat, isCurrent, event)){
+			this.capBreakersUsed--;
+			this.displayStatus();
+		}
+	}
+
 	display(){
 		super.display();
 		let unitEl = document.querySelector("#other-unit");
@@ -28,14 +40,14 @@ class AutobuyerUnit extends Unit {
 				e.preventDefault();
 			};
 		});
-		autobuyComplete = false;
 	}
 
 	displayStatus(){
 		let unitElWrapper = document.querySelector("#other-unit-wrapper");
 		unitElWrapper.querySelector(".xp-amount").innerHTML = this.getSpentStatValue();
 		unitElWrapper.querySelector(".cap-breakers").innerHTML = this.capBreakersUsed;
-		unitElWrapper.querySelector(".ai").innerHTML = "";
+		unitElWrapper.querySelector(".ai").value = this.ai.name;
+		unitElWrapper.querySelector(".ai").removeAttribute("disabled");
 		document.querySelector("#other-unit-wrapper .col-header").innerHTML = `${this.name} (${settings.autobuyer ? "Active" : "Inactive"})`;
 		maps[currentLevel].noHighlight(0);
 	}

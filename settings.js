@@ -7,6 +7,7 @@ let settings = {
 	autobuyer: true,
 	multiXp: 1,
 	showChallenges: false,
+	hideRepeatMessages: false,
 }
 
 let settingMessages = {
@@ -33,6 +34,10 @@ let settingMessages = {
 		"Configure Autobuyer (Off)",
 		"Configure Autobuyer (On)",
 	],
+	hideRepeatMessages: [
+		"Show messages when you clear a floor for the first time since loading",
+		"Show messages when you clear a floor for the first time ever",
+	]
 }
 
 let lockedSettings = {
@@ -71,6 +76,7 @@ function displaySettings(){
 	options.querySelector("#auto-discard").innerHTML = settingMessages.autoDiscard[+settings.autoDiscard];
 	options.querySelector("#multi-xp").innerHTML = settingMessages.multiXp[multiXpOptions.findIndex(s => s == settings.multiXp)];
 	options.querySelector("#autobuyer").innerHTML = settingMessages.autobuyer[+settings.autobuyer];
+	options.querySelector("#repeat-messages").innerHTML = settingMessages.hideRepeatMessages[+settings.hideRepeatMessages];
 	// Hide locked settings.
 	for (const [key, value] of Object.entries(lockedSettings)){
 		options.querySelector(`#${key.replace(/([A-Z])/, "-$1").toLowerCase()}`).style.display = value ? "none" : "block";

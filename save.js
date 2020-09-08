@@ -35,6 +35,7 @@ function save(){
 				};
 			}),
 			capBreakersUsed: autobuyerUnit.capBreakersUsed,
+			ai: autobuyerUnit.ai.name,
 		},
 		activeChallenge: activeChallenge ? activeChallenge.name.replace(/ /g, "") : "",
 		challenges: Object.entries(challenges).map(challenge => {
@@ -42,6 +43,12 @@ function save(){
 				name: challenge[0],
 				locked: challenge[1].locked,
 				bestFloor: challenge[1].bestFloor,
+			};
+		}),
+		ais: Object.entries(ais).map(ai => {
+			return {
+				name: ai[0],
+				locked: ai[1].locked,
 			};
 		}),
 	}
@@ -78,22 +85,30 @@ function load(){
 		unit.preventRemoval = unitData.preventRemoval;
 		return unit;
 	});
+	// Load autobuyer
+	// Should potentially use same system as loading units.
 	saveGame.autobuy.stats.forEach(stat => {
 		autobuyerUnit.stats[stat.name].cap = stat.cap || Infinity;
 		autobuyerUnit.stats[stat.name].value = stat.value;
 		autobuyerUnit.stats[stat.name].locked = false;
 	});
 	autobuyerUnit.capBreakersUsed = saveGame.autobuy.capBreakersUsed;
+	autobuyerUnit.ai = ais[saveGame.autobuy.ai];
+
 	activeChallenge = challenges[saveGame.activeChallenge] || null;
 	saveGame.challenges.forEach(challengeData => {
 		let challenge = challenges[challengeData.name];
 		challenge.locked = challengeData.locked;
 		challenge.bestFloor = challengeData.bestFloor;
 	});
-
+	saveGame.ais.forEach(saveAi => {
+		ais[saveAi.name].locked = saveAi.locked;
+	});
+	fillAIDropdown();
+	
+	calculateBaseStatValue();
 	// Do setup
 	if (currentLevel > 0){
-		calculateBaseStatValue();
 		partyUnits = playerUnits.filter(unit => unit.active);
 		partyUnits.forEach((unit, i) => {
 			unit.character = playerSymbols[(i+1) % 4];

@@ -11,36 +11,21 @@ let baseStats = {
 	Damage: 5,
 };
 let autobuyerUnit = new AutobuyerUnit();
-let autobuyComplete = false;
 // To be implemented; speeds up ticks to make up for missed time.
 let fastTime = 0;
 let base_stat_value = 211;
 let bestLevel = 0;
-let lastAi = "Simple";
 
 function calculateBaseStatValue(){
-	base_stat_value += (new Unit(true, "", baseStats)).getSpentStatValue();
+	base_stat_value += (new Unit(true, "You", baseStats)).getSpentStatValue();
 }
 calculateBaseStatValue();
 
 function beginRun(){
 	if (tickInterval) return;
 	document.querySelector("#start-button").classList.add("running");
-	if (playerUnits.length >= maxUnits){
-		if (settings.autoDiscard){
-			let minXP = playerUnits.reduce((a, unit) => !unit.preventRemoval && !unit.active && (xp = unit.getStatValue()) < a ? xp : a, Infinity);
-			if (minXP == Infinity){
-				return;
-			}
-			let unitMinXP = playerUnits.findIndex(unit => !unit.active && unit.getStatValue() == minXP);
-			playerUnits.splice(unitMinXP, 1);
-		} else {
-			displayMessage("You can only have 10 total units - forget one by clicking the x before you can enter the caverns again.");
-			return;
-		}
-	}
 	let partyUnits = playerUnits.filter(unit => unit.active);
-	if (partyUnits.length > 3 || (activeChallenge && activeChallenge.name == "Two Units" && partyUnits.length > 1)){
+	if (partyUnits.length > 3){
 		if (settings.autoUnselect == "Total"){
 			let minXP = playerUnits.reduce((a, unit) => unit.active && (xp = unit.getStatValue()) < a ? xp : a, Infinity);
 			playerUnits.find(unit => unit.active && unit.getStatValue() == minXP).active = false;
@@ -55,18 +40,30 @@ function beginRun(){
 		}
 	}
 	partyUnits = playerUnits.filter(unit => unit.active);
+	if (playerUnits.length >= maxUnits){
+		if (settings.autoDiscard){
+			let minXP = playerUnits.reduce((a, unit) => !unit.preventRemoval && !unit.active && (xp = unit.getStatValue()) < a ? xp : a, Infinity);
+			if (minXP == Infinity){
+				return;
+			}
+			let unitMinXP = playerUnits.findIndex(unit => !unit.active && unit.getStatValue() == minXP && !unit.preventRemoval);
+			playerUnits.splice(unitMinXP, 1);
+		} else {
+			displayMessage("You can only have 10 total units - forget one by clicking the x before you can enter the caverns again.");
+			return;
+		}
+	}
 	loopCount++;
 	partyUnits.forEach((unit, i) => {
 		unit.refillHealth();
 		unit.character = playerSymbols[i+1];
 	})
-	let newPlayerUnit = new Unit(true, "You", baseStats, lastAi, true, loopCount);
+	let newPlayerUnit = new Unit(true, "You", baseStats, autobuyerUnit.ai.name, true, loopCount);
 	newPlayerUnit.character = playerSymbols[0];
 	playerUnits.push(newPlayerUnit);
 	displayCurrentUnit();
 	displayAllUnits();
 	currentLevel = 0;
-	autobuyComplete = false;
 	loadNextMap();
 	tickInterval = setInterval(runTick, tickTime);
 }
@@ -96,10 +93,11 @@ function displayCurrentUnitStatus(){
 function displayEnemyUnits(){
 	let enemyDiv = document.querySelector("#enemy-creatures");
 	let unitSummaryTemplate = document.querySelector("#enemy-summary-template");
-	while (enemyDiv.firstChild){
-		enemyDiv.removeChild(enemyDiv.lastChild);
-	}
+	// while (enemyDiv.firstChild){
+	// 	enemyDiv.removeChild(enemyDiv.lastChild);
+	// }
 	maps[currentLevel].getVisibleEnemies().forEach(unit => {
+		if (unit.enemySummaryNode) return;
 		let unitEl = unitSummaryTemplate.cloneNode(true);
 		unitEl.removeAttribute("id");
 		unitEl.querySelector(".name").innerHTML = unit.name;
@@ -110,6 +108,7 @@ function displayEnemyUnits(){
 			selectedUnit = unit;
 		}
 		enemyDiv.append(unitEl);
+		unit.enemySummaryNode = unitEl;
 	});
 }
 
@@ -183,10 +182,11 @@ function applyReward(reward){
 		displayMessage(`You have unlocked the ${reward} setting!`);
 		displaySettings();
 	} else if (reward == "FasterTicks") {
-		tickTime -= 50;
+		tickTime *= 0.8;
 		// It really shouldn't ever drop this low, but just in case...
+		// With 4 FasterTicks, tickTime will be 102.4.
 		if (tickTime < 100) tickTime = 100;
-		displayMessage(`Ticks are now faster!`);
+		displayMessage(`Ticks are now 20% faster!`);
 	} else if (reward.split(" ")[0] == "Autobuyer") {
 		let stat = reward.split(" ")[1];
 		displayMessage(`You have unlocked the Autobuyer for ${stat}!`);
@@ -210,6 +210,7 @@ function applyReward(reward){
 		if (selectedUnit){
 			selectedUnit.displayStatus();
 		}
+		fillAIDropdown();
 	}
 }
 
@@ -218,9 +219,14 @@ function runTick(){
 	partyUnits.forEach(unit => unit.tick());
 	maps[currentLevel].tick(partyUnits);
 	if (maps[currentLevel].checkComplete()){
-		grantXp(challenges.TwoUnits.bestFloor);
+		grantXp(challenges.PlusTwoLevels.bestFloor / 2);
 		displayChallenges();
 		currentLevel++;
+		if (currentLevel % 10 == 0){
+			// Get a capBreaker each time a boss level is defeated.
+			playerUnits.find(unit => unit.current).capBreakers++;
+			displayCurrentUnit();
+		}
 		loadNextMap();
 		save();
 	}
@@ -245,7 +251,6 @@ function stopRun(){
 	let currentUnit = playerUnits.find(unit => unit.current);
 	if (currentUnit) {
 		currentUnit.current = false;
-		lastAi = currentUnit.ai.name;
 	}
 	playerUnits.forEach(unit => unit.character = "");
 	currentLevel = 0;

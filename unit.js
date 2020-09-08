@@ -28,10 +28,23 @@ class Unit {
 			Regeneration: new Regeneration(0),
 			Haste: new Haste(0),
 		};
+		let extraLevels = 0;
+		if (activeChallenge && activeChallenge.name == "Plus Two Levels" && name != "You"){
+			extraLevels = 2;
+		}
 		for (const [key, value] of Object.entries(stats)){
 			if (!this.stats[key]) continue;
-			this.stats[key].value += value * (stats.level || 1);
+			if (key == "Range"){
+				this.stats[key].value += value;
+			} else if (key == "CriticalDamage"){
+				this.stats[key].value += ((value || 2) - 2) * ((stats.level || 1) + extraLevels);
+			} else {
+				this.stats[key].value += value * ((stats.level || 1) + extraLevels);
+			}
 			this.stats[key].unlock();
+		}
+		if (activeChallenge && activeChallenge.name == "Accuracy" && name != "You"){
+			this.stats.ToHit.value *= 10;
 		}
 		// Number of times this unit's caps can be increased.
 		this.capBreakers = 0;
@@ -50,6 +63,8 @@ class Unit {
 		this.character = "";
 		// Whether this unit can be deleted.
 		this.preventRemoval = false;
+		// For maintaining a better list of enemies.
+		this.enemySummaryNode = null;
 	}
 	
 	attack(enemy){
@@ -59,6 +74,7 @@ class Unit {
 			attacks: 1,
 			hits: 0,
 			damage: 0,
+			bleed: 0,
 		}
 		this.stats.Multiattack.onBeginAttack(attackStats);
 		Object.values(this.stats).forEach(s => s.onAttack(attackStats));
@@ -78,6 +94,14 @@ class Unit {
 		if (this == selectedUnit){
 			maps[currentLevel].noHighlight(0);
 		}
+		this.removeSummary();
+	}
+	
+	removeSummary(){
+		if (this.enemySummaryNode){
+			this.enemySummaryNode.parentNode.removeChild(this.enemySummaryNode);
+			this.enemySummaryNode = null;
+		}
 	}
 
 	getStatValue(){
@@ -88,19 +112,28 @@ class Unit {
 		return Object.values(this.stats).reduce((a, stat) => a + stat.getXpAmount(), 0) - base_stat_value;
 	}
 
-	breakCap(stat){
+	breakCap(stat, isCurrent, event){
 		if (this.capBreakers > 0){
 			if (this.stats[stat].increaseCap()){
 				this.capBreakers--;
 			}
 		}
-		// Assumes that this is the selected unit when upgrading.
-		this.display();
+		if (event) event.stopPropagation();
+		this.display(isCurrent);
+	}
+
+	unBreakCap(stat, isCurrent, event){
+		if (this.stats[stat].decreaseCap()){
+			this.capBreakers++;
+			this.display(isCurrent);
+			return true;
+		}
+		return false;
 	}
 
 	spendXp(stat, isCurrent, event, amount){
 		if (this.xp >= 1){
-			let xpToSpend = Math.min(this.xp, amount || settings.multiXp);
+			let xpToSpend = Math.min(Math.floor(this.xp), amount || settings.multiXp);
 			this.xp -= xpToSpend - this.stats[stat].gainXp(xpToSpend);
 		}
 		this.display(isCurrent);
@@ -136,6 +169,11 @@ class Unit {
 				statEl.querySelector(".name").innerHTML = stat.name;
 				if (stat.capIncrease){
 					statEl.querySelector(".cap-increase").onclick = this.breakCap.bind(this, stat.getQualifiedName(), this.current);
+					statEl.querySelector(".cap-increase").oncontextmenu = e => {
+						this.unBreakCap(stat.getQualifiedName(), this.current);
+						e.preventDefault();
+						e.stopPropagation();
+					};
 				}
 				statEl.onclick = this.spendXp.bind(this, stat.getQualifiedName(), this.current || forceCurrent);
 				if (stat.name == "Health"){
@@ -159,6 +197,11 @@ class Unit {
 		unitElWrapper.querySelector(".xp-amount").innerHTML = Math.floor(this.xp);
 		unitElWrapper.querySelector(".cap-breakers").innerHTML = this.capBreakers;
 		unitElWrapper.querySelector(".ai").value = this.ai.name;
+		if (this.current || forceCurrent){
+			unitElWrapper.querySelector(".ai").removeAttribute("disabled");
+		} else {
+			// unitElWrapper.querySelector(".ai").disabled = true;
+		}
 		if (!this.dead){
 			document.querySelector(`#${this.current || forceCurrent ? "current" : "other"}-unit .Health .current`).style.width = `${100 * this.stats.Health.current / this.stats.Health.value}%`;
 			maps[currentLevel].highlight(this.current || forceCurrent ? 1 : 0, this.x, this.y);
@@ -174,8 +217,8 @@ class Unit {
 		}
 		Object.values(this.stats).forEach(s => s.onKill(killStats));
 		this.xp += killStats.xp;
-		// Fix rounding errors.  0.005 is the smallest increment of xp you can gain, so once we get past that we know we can round up.
-		if (this.xp % 1 > 0.999) this.xp = Math.ceil(this.xp);
+		// Fix rounding errors.
+		if (this.xp % 1 > 0.99999) this.xp = Math.ceil(this.xp);
 		this.autobuy();
 		this.updateXP();
 	}
@@ -183,19 +226,39 @@ class Unit {
 	// Check if autobuying is needed, and if so, do it.
 	autobuy(){
 		if (!settings.autobuyer) return;
+		this.autobuyCapBreakers();
 		let autobuyStats = Object.keys(autobuyerUnit.stats);
 		shuffle(autobuyStats);
 		let index = 0;
-		while (this.xp > 0 && autobuyStats.length){
-			if (autobuyerUnit.stats[autobuyStats[index]].value > this.stats[autobuyStats[index]].value){
+		while (this.xp >= 1 && autobuyStats.length){
+			if (autobuyerUnit.stats[autobuyStats[index]].value - 0.001 > this.stats[autobuyStats[index]].value){
+				let startingValue = this.stats[autobuyStats[index]].value;
 				this.spendXp(autobuyStats[index], true, null, 1);
+				// If we're at the cap or something else prevents us from buying...
+				if (startingValue == this.stats[autobuyStats[index]].value){
+					autobuyStats.splice(index, 1);
+				}
 			} else {
 				autobuyStats.splice(index, 1);
 			}
 			index = (index + 1) % autobuyStats.length;
 		}
-		if (this.xp > 0){
-			autobuyComplete = true;
+	}
+
+	autobuyCapBreakers(){
+		if (!settings.autobuyer) return;
+		let autobuyStats = Object.entries(autobuyerUnit.stats).filter(stat => {
+			return this.stats[stat[0]].cap < stat[1].cap;
+		});
+		shuffle(autobuyStats);
+		let index = 0;
+		while (this.capBreakers >= 1 && autobuyStats.length){
+			if (autobuyStats[index][1].cap > this.stats[autobuyStats[index][0]].cap){
+				this.breakCap(autobuyStats[index][0], true, null, 1);
+			} else {
+				autobuyStats.splice(index, 1);
+			}
+			index = (index + 1) % autobuyStats.length;
 		}
 	}
 
@@ -204,6 +267,7 @@ class Unit {
 
 	tick(extraTicks = null){
 		if (this.dead) return;
+		Object.values(this.stats).forEach(s => s.onTick(this));
 		let move = this.ai.move(maps[currentLevel], this);
 		if (move.type == "attack"){
 			this.attack(move.enemy);

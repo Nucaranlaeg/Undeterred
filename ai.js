@@ -35,7 +35,7 @@ class AISimple extends AI {
 			};
 		}
 		// Attempt to attack, attacking a random unit.
-		let attackableUnits = targetUnits.filter(target => Math.abs(target.x - unit.x) + Math.abs(target.y - unit.y) <= unit.stats.Range.value);
+		let attackableUnits = targetUnits.filter(target => Math.abs(target.x - unit.x) + Math.abs(target.y - unit.y) <= unit.stats.Range.value && map.isClearLine([unit.x, unit.y], [target.x, target.y]));
 		if (attackableUnits.length > 0){
 			return {
 				type: "attack",
@@ -61,9 +61,9 @@ class AISimple extends AI {
 	}
 }
 
-class AIGrouping extends AI {
+class AINearest extends AI {
 	constructor(){
-		super("Grouping", "Moves toward the nearest enemy, even if there's an ally in between.");
+		super("Nearest", "Moves toward the nearest enemy or unexplored space.");
 	}
 	
 	move(map, unit){
@@ -79,7 +79,7 @@ class AIGrouping extends AI {
 			}
 		}
 		// Attempt to attack, attacking a random unit.
-		let attackableUnits = targetUnits.filter(target => Math.abs(target.x - unit.x) + Math.abs(target.y - unit.y) == unit.stats.Range.value);
+		let attackableUnits = targetUnits.filter(target => Math.abs(target.x - unit.x) + Math.abs(target.y - unit.y) <= unit.stats.Range.value && map.isClearLine([unit.x, unit.y], [target.x, target.y]));
 		if (attackableUnits.length > 0){
 			return {
 				type: "attack",
@@ -87,10 +87,13 @@ class AIGrouping extends AI {
 			};
 		}
 		// Move to the nearest enemy unit (or an unexplored space, if a player unit).
-		let [x, y] = breadthFirstSearch(map, unit.x, unit.y, (x, y) => targetUnits.some(target => target.x == x && target.y == y) || (!unit.playerOwned && !map.isVisibleSpace(x, y)), true);
+		let [x, y] = breadthFirstSearch(map, unit.x, unit.y, (x, y) => targetUnits.some(target => target.x == x && target.y == y) || (unit.playerOwned && !map.isVisibleSpace(x, y)), false);
 		// If there's a creature in the way, move randomly.
 		if (!map.isEmpty(x, y, false)){
-			return moveRandomly(map, unit.x, unit.y);
+			[x, y] = breadthFirstSearch(map, unit.x, unit.y, (x, y) => targetUnits.some(target => target.x == x && target.y == y) || (unit.playerOwned && !map.isVisibleSpace(x, y)), true);
+			if (!map.isEmpty(x, y, false)){
+				return moveRandomly(map, unit.x, unit.y);
+			}
 		}
 		return {
 			type: "move",
@@ -156,11 +159,16 @@ function moveRandomly(map, x, y){
 
 let ais = {
 	Simple: new AISimple(),
-	Grouping: new AIGrouping(),
+	Nearest: new AINearest(),
 };
 
 function fillAIDropdown(){
 	let selectEls = document.querySelectorAll(".ai");
+	selectEls.forEach(el => {
+		while (el.firstChild){
+			el.removeChild(el.lastChild);
+		}
+	});
 	for (const [key, value] of Object.entries(ais)){
 		let aiEl = document.createElement("option");
 		aiEl.value = key;

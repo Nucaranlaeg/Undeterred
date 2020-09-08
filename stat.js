@@ -24,6 +24,8 @@ class Stat {
 
 	onKill(){}
 
+	onTick(){}
+
 	gainXp(amount){
 		if (activeChallenge && activeChallenge.isIllegal(this)) return amount;
 		this.value += amount * this.xpMult;
@@ -46,6 +48,14 @@ class Stat {
 	increaseCap(){
 		if (this.cap == Infinity || this.capIncrease == 0) return false;
 		this.cap += this.capIncrease;
+		return true;
+	}
+
+	decreaseCap(){
+		if (this.cap == Infinity || this.capIncrease == 0) return false;
+		// If we haven't improved the cap...
+		if (this.cap <= this.capIncrease * 2.5) return false;
+		this.cap -= this.capIncrease;
 		return true;
 	}
 
@@ -116,6 +126,9 @@ class CriticalHit extends Stat {
 				}
 				currentValue -= 0.75;
 			}
+			if (activeChallenge && activeChallenge.name == "Criticality"){
+				critCount++;
+			}
 			attackStats.damage += attackStats.attacker.stats.Damage.value * (attackStats.attacker.stats.CriticalDamage.value ** critCount - 1);
 		}
 	}
@@ -134,6 +147,7 @@ class Health extends Stat {
 	}
 	
 	gainXp(amount){
+		if (activeChallenge && activeChallenge.isIllegal(this)) return amount;
 		if (this.value == this.cap) return amount;
 		this.current += amount * this.xpMult;
 		this.value += amount * this.xpMult;
@@ -161,7 +175,7 @@ class Health extends Stat {
 
 class Block extends Stat {
 	constructor(value = 0){
-		super("Block", value, 0.3, false, 0, "Reduces the damage you take by 1 per point.");
+		super("Block", value, 0.3, false, 200, "Reduces the damage you take by 1 per point.");
 	}
 
 	onTakeDamage(attackStats){
@@ -172,7 +186,7 @@ class Block extends Stat {
 
 class Protection extends Stat {
 	constructor(value = 0){
-		super("Protection", value, 1, false, 0, "Reduces the damage you take by roughly 1% per point (after Block).");
+		super("Protection", value, 1, false, 100, "Reduces the damage you take by roughly 1% per point (after Block).");
 	}
 
 	onTakeDamage(attackStats){
@@ -182,7 +196,11 @@ class Protection extends Stat {
 
 class Regeneration extends Stat {
 	constructor(value = 0){
-		super("Regeneration", value, 0.05, false, 0, "Each second, regain this much health.");
+		super("Regeneration", value, 0.1, false, 100, "Each tick, regain this much health.");
+	}
+
+	onTick(unit){
+		unit.stats.Health.heal(this.value);
 	}
 }
 
@@ -193,16 +211,6 @@ class Vampirism extends Stat {
 
 	onDamage(attackStats){
 		attackStats.attacker.stats.Health.heal(attackStats.damage * this.value / 100); 
-	}
-}
-
-class XPBonus extends Stat {
-	constructor(value = 0){
-		super("XP Bonus", value, 0.005, true, 0, "Gain this percent additional XP.");
-	}
-
-	onKill(killStats){
-		killStats.xp *= 1 + value;
 	}
 }
 
@@ -227,5 +235,44 @@ class Haste extends Stat {
 			currentValue -= 0.75;
 		}
 		return ticks;
+	}
+}
+
+class Bleed extends Stat {
+	constructor(value = 1){
+		super("Bleed", value, 0.1, false, 100, "Attacks deal this much damage per tick for the rest of the level.");
+		this.stacks = 0;
+	}
+
+	onTick(unit){
+		unit.stats.Health.takeDamage({enemy: unit, damage: this.stacks});
+	}
+
+	onHit(attackStats){
+		attackStats.bleed = this.value * attackStats.hits;
+	}
+
+	onTakeDamage(attackStats){
+		attackStats.enemy.stats.bleed.value += attackStats.bleed;
+	}
+}
+
+class WoundReflection extends Stat {
+	constructor(value = 1){
+		super("Wound Reflection", value, 0.005, true, 50, "Return a portion of damage taken to the attacker.");
+	}
+
+	onTakeDamage(attackStats){
+		if (!attackStats.attacker) return;
+		let returnAttackStats = {
+			enemy: attackStats.attacker,
+			attacker: null,
+			attacks: 0,
+			hits: 0,
+			damage: attackStats.damage * this.value,
+			bleed: 0,
+		}
+		Object.values(attackStats.enemy.stats).forEach(stat => stat.onTakeDamage(returnAttackStats));
+		attackStats.attacker.stats.Health.takeDamage(returnAttackStats);
 	}
 }

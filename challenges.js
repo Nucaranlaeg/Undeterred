@@ -25,9 +25,11 @@ class Challenge {
 let activeChallenge = null;
 
 let challenges = {
-	LowDamage: new Challenge("Low Damage", "Clear floors without the ability to increase your damage.", gainBase("Damage", 2), "+2 Damage / floor", ["Damage", "Critical Hit", "Critical Damage"]),
-	LowHealth: new Challenge("Low Health", "Clear floors without the ability to increase your health.", gainBase("Health", 25), "+25 Health / floor", ["Health"]),
-	TwoUnits: new Challenge("Two Units", "Clear floors, but you can only have two units at a time.", ()=>{}, "+1 XP / floor each floor", []),
+	LowDamage: new Challenge("Low Damage", "Delve without the ability to increase your damage.", gainBase("Damage", 2), "+2 Damage / floor", ["Damage"]),
+	LowHealth: new Challenge("Low Health", "Delve without the ability to increase your health.", gainBase("Health", 25), "+25 Health / floor", ["Health"]),
+	PlusTwoLevels: new Challenge("Plus Two Levels", "Delve, but each monster is leveled up twice.", ()=>{}, "+0.5 XP / floor each floor", []),
+	Accuracy: new Challenge("Accuracy", "Delve, but all monsters have 10x as much To-Hit.", gainBase("Dodge", 4), "+4 Dodge / floor", []),
+	Criticality: new Challenge("Criticality", "Delve, but all attacks crit one additional time.", gainBase("Critical Damage", 0.04), "+4% Critical Damage / floor", []),
 };
 
 function gainBase(stat, value){
@@ -57,6 +59,7 @@ function displayChallenges(){
 		cEl.removeAttribute("id");
 		cEl.querySelector(".name").innerHTML = challenge.name;
 		cEl.querySelector(".description").innerHTML = challenge.description;
+		cEl.title = challenge.description;
 		cEl.querySelector(".reward").innerHTML = challenge.rewardDescription;
 		cEl.querySelector(".highest-floor").innerHTML = "Best: " + challenge.bestFloor;
 		if (challenge == activeChallenge){
