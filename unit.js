@@ -18,9 +18,11 @@ class Unit {
 			Multiattack: new Multiattack(0),
 			CriticalHit: new CriticalHit(0),
 			CriticalDamage: new CriticalDamage(2),
+			Bleed: new Bleed(0),
 			// Defensive
-			Block: new Block(0),
 			Protection: new Protection(0),
+			Block: new Block(0),
+			Blunting: new Blunting(0),
 			Vampirism: new Vampirism(0),
 			// Other
 			Range: new Range(1),
@@ -35,16 +37,16 @@ class Unit {
 		for (const [key, value] of Object.entries(stats)){
 			if (!this.stats[key]) continue;
 			if (key == "Range"){
-				this.stats[key].value += value;
+				this.stats[key].addBase(value);
 			} else if (key == "CriticalDamage"){
-				this.stats[key].value += ((value || 2) - 2) * ((stats.level || 1) + extraLevels);
+				this.stats[key].addBase(((value || 2) - 2) * ((stats.level || 1) + extraLevels));
 			} else {
-				this.stats[key].value += value * ((stats.level || 1) + extraLevels);
+				this.stats[key].addBase(value * ((stats.level || 1) + extraLevels));
 			}
 			this.stats[key].unlock();
 		}
 		if (activeChallenge && activeChallenge.name == "Accuracy" && name != "You"){
-			this.stats.ToHit.value *= 10;
+			this.stats.ToHit.value *= 100;
 		}
 		// Number of times this unit's caps can be increased.
 		this.capBreakers = 0;
@@ -52,6 +54,8 @@ class Unit {
 		this.active = true;
 		// Spendable xp if a player unit, xp granted if an enemy
 		this.xp = 0;
+		// Amount of xp when run complete; affects xp gained when not the current unit.
+		this.deathXp = 0;
 		// Which AI this unit uses to move around
 		this.ai = ais[ai];
 		// Coordinates on the current map
@@ -113,9 +117,9 @@ class Unit {
 	}
 
 	breakCap(stat, isCurrent, event){
-		if (this.capBreakers > 0){
+		if (this.capBreakers > this.stats[stat].breaks){
 			if (this.stats[stat].increaseCap()){
-				this.capBreakers--;
+				this.capBreakers -= this.stats[stat].breaks;
 			}
 		}
 		if (event) event.stopPropagation();
@@ -124,7 +128,7 @@ class Unit {
 
 	unBreakCap(stat, isCurrent, event){
 		if (this.stats[stat].decreaseCap()){
-			this.capBreakers++;
+			this.capBreakers += this.stats[stat].breaks + 1;
 			this.display(isCurrent);
 			return true;
 		}
@@ -132,11 +136,14 @@ class Unit {
 	}
 
 	spendXp(stat, isCurrent, event, amount){
+		if (!this.playerOwned) return;
 		if (this.xp >= 1){
 			let xpToSpend = Math.min(Math.floor(this.xp), amount || settings.multiXp);
 			this.xp -= xpToSpend - this.stats[stat].gainXp(xpToSpend);
 		}
-		this.display(isCurrent);
+		if (isCurrent || event){
+			this.display(isCurrent);
+		}
 		this.updateXP();
 	}
 	
@@ -182,12 +189,13 @@ class Unit {
 					current.classList.add("current");
 				}
 			}
-			statEl.querySelector(".cap-increase").style.display = this.capBreakers && stat.capIncrease ? "inline" : "none";
+			statEl.querySelector(".cap-increase").style.display = this.capBreakers > stat.breaks && stat.capIncrease ? "inline" : "none";
 			statEl.querySelector(".value").innerHTML = formatNumber(stat.isPercent ? stat.value * 100 : stat.value) + (stat.isPercent ? "%" : "");
 			statEl.querySelector(".description").innerHTML = stat.description;
-			if (stat.cap !== Infinity){
-				statEl.querySelector(".cap").innerHTML = "(" + (stat.isPercent ? (stat.cap * 100) + "%" : stat.cap) + ")";
+			if (stat.cap !== Infinity && this.playerOwned){
+				statEl.querySelector(".cap").innerHTML = "(" + (stat.isPercent ? formatNumber(stat.cap * 100) + "%" : formatNumber(stat.cap)) + ")";
 			}
+			if (activeChallenge && activeChallenge.isIllegal(stat)) statEl.classList.add("disabled");
 		});
 		this.displayStatus(forceCurrent);
 	}
@@ -200,6 +208,14 @@ class Unit {
 		if (this.current || forceCurrent){
 			unitElWrapper.querySelector(".ai").removeAttribute("disabled");
 		} else {
+			let offlineXpButton = unitElWrapper.querySelector("#offline-xp-button");
+			if (this.offlineTimeCost() < offlineData.offlineTime){
+				offlineXpButton.style.display = "inline-block";
+				offlineXpButton.title = `Cost for ${settings.multiXp} xp: ${formatNumber(this.offlineTimeCost() / 1000)}s`;
+				offlineXpButton.onclick = this.spendOfflineTime.bind(this);
+			} else {
+				offlineXpButton.style.display = "none";
+			}
 			// unitElWrapper.querySelector(".ai").disabled = true;
 		}
 		if (!this.dead){
@@ -211,9 +227,10 @@ class Unit {
 		}
 	}
 
-	onKill(xp){
+	onKill(xp, kills = 1){
 		let killStats = {
-			xp: xp,
+			xp: this.current ? xp : xp / getXpSlowdown(this.deathXp, this.getStatValue()),
+			kills: kills,
 		}
 		Object.values(this.stats).forEach(s => s.onKill(killStats));
 		this.xp += killStats.xp;
@@ -233,7 +250,7 @@ class Unit {
 		while (this.xp >= 1 && autobuyStats.length){
 			if (autobuyerUnit.stats[autobuyStats[index]].value - 0.001 > this.stats[autobuyStats[index]].value){
 				let startingValue = this.stats[autobuyStats[index]].value;
-				this.spendXp(autobuyStats[index], true, null, 1);
+				this.spendXp(autobuyStats[index], this.current, null, 1);
 				// If we're at the cap or something else prevents us from buying...
 				if (startingValue == this.stats[autobuyStats[index]].value){
 					autobuyStats.splice(index, 1);
@@ -285,10 +302,35 @@ class Unit {
 
 	refillHealth(){
 		this.stats.Health.current = this.stats.Health.value;
+		this.stats.Bleed.stacks = 0;
+	}
+
+	offlineTimeCost(){
+		return (getXpSlowdown(this.deathXp, this.getStatValue()) * settings.multiXp / 2 + getXpSlowdown(this.deathXp, this.getStatValue() + settings.multiXp) * settings.multiXp / 2) / offlineData.xpPerSec * 1000;
+	}
+
+	spendOfflineTime(){
+		let cost = this.offlineTimeCost();
+		if (cost <= offlineData.offlineTime){
+			offlineData.offlineTime -= cost;
+			this.xp += settings.multiXp;
+			this.autobuy();
+			this.updateXP();
+			this.displayStatus(false);
+			offlineTimeEl.innerHTML = formatNumber(offlineData.offlineTime / 1000);
+		}
 	}
 }
 
-// Utility function
+function getXpSlowdown(deathXp, total){
+	let result = deathXp + (total - deathXp) * 4 || 1;
+	if (total > deathXp * 1.1){
+		result *= Math.pow(total / deathXp, 2);
+	}
+	return result;
+}
+
+// Utility functions
 function shuffle(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));

@@ -18,13 +18,13 @@ class AutobuyerUnit extends Unit {
 	}
 
 	breakCap(stat, isCurrent, event){
-		this.capBreakersUsed++;
+		this.capBreakersUsed += this.stats[stat].breaks + 1;
 		super.breakCap(stat, isCurrent, event);
 	}
 
 	unBreakCap(stat, isCurrent, event){
 		if (super.unBreakCap(stat, isCurrent, event)){
-			this.capBreakersUsed--;
+			this.capBreakersUsed -= this.stats[stat].breaks + 1;
 			this.displayStatus();
 		}
 	}
@@ -50,6 +50,7 @@ class AutobuyerUnit extends Unit {
 		unitElWrapper.querySelector(".ai").removeAttribute("disabled");
 		document.querySelector("#other-unit-wrapper .col-header").innerHTML = `${this.name} (${settings.autobuyer ? "Active" : "Inactive"})`;
 		maps[currentLevel].noHighlight(0);
+		unitElWrapper.querySelector("#offline-xp-button").style.display = "none";
 	}
 
 	unlock(stat){
@@ -58,8 +59,9 @@ class AutobuyerUnit extends Unit {
 }
 
 function clearAutobuy(){
-	for (const [key, value] of Object.entries(baseStats)){
+	for (let [key, value] of Object.entries(baseStats)){
 		if (!autobuyerUnit.stats[key]) continue; // What?  But this way is safer.
+		if (key == "CriticalDamage" && value < 2) value = 2;
 		autobuyerUnit.stats[key].value = value;
 	}
 	autobuyerUnit.display();

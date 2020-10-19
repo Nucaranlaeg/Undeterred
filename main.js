@@ -11,10 +11,17 @@ let baseStats = {
 	Damage: 5,
 };
 let autobuyerUnit = new AutobuyerUnit();
-// To be implemented; speeds up ticks to make up for missed time.
-let fastTime = 0;
 let base_stat_value = 211;
 let bestLevel = 0;
+// Offline stuff
+let offlineData = {
+	xpPerSec: 0,
+	offlineTime: 0,
+	lastTickTime: Date.now(),
+}
+let offlineTimeEl = document.querySelector("#offline-time");
+let runStart = null;
+let runXp = 0;
 
 function calculateBaseStatValue(){
 	base_stat_value += (new Unit(true, "You", baseStats)).getSpentStatValue();
@@ -23,12 +30,14 @@ calculateBaseStatValue();
 
 function beginRun(){
 	if (tickInterval) return;
-	document.querySelector("#start-button").classList.add("running");
 	let partyUnits = playerUnits.filter(unit => unit.active);
-	if (partyUnits.length > 3){
+	while (partyUnits.length > 3){
 		if (settings.autoUnselect == "Total"){
 			let minXP = playerUnits.reduce((a, unit) => unit.active && (xp = unit.getStatValue()) < a ? xp : a, Infinity);
 			playerUnits.find(unit => unit.active && unit.getStatValue() == minXP).active = false;
+		} else if (settings.autoUnselect == "Potential"){
+			let minXP = playerUnits.reduce((a, unit) => unit.active && unit.deathXp < a ? unit.deathXp : a, Infinity);
+			playerUnits.find(unit => unit.active && unit.deathXp == minXP).active = false;
 		} else if (settings.autoUnselect == "Spent"){
 			let minXP = playerUnits.reduce((a, unit) => unit.active && (xp = unit.getSpentStatValue()) < a ? xp : a, Infinity);
 			let minTotalXP = playerUnits.reduce((a, unit) => unit.active && unit.getSpentStatValue() == minXP && (xp = unit.getStatValue()) < a ? xp : a, Infinity);
@@ -38,29 +47,41 @@ function beginRun(){
 			displayHelpMessage("RemoveUnitsFromParty");
 			return;
 		}
+		partyUnits = playerUnits.filter(unit => unit.active);
 	}
 	partyUnits = playerUnits.filter(unit => unit.active);
-	if (playerUnits.length >= maxUnits){
-		if (settings.autoDiscard){
+	while (playerUnits.length >= maxUnits){
+		if (settings.autoDiscard == "Total"){
 			let minXP = playerUnits.reduce((a, unit) => !unit.preventRemoval && !unit.active && (xp = unit.getStatValue()) < a ? xp : a, Infinity);
 			if (minXP == Infinity){
 				return;
 			}
 			let unitMinXP = playerUnits.findIndex(unit => !unit.active && unit.getStatValue() == minXP && !unit.preventRemoval);
 			playerUnits.splice(unitMinXP, 1);
+		} else if (settings.autoDiscard == "Potential"){
+			let minXP = playerUnits.reduce((a, unit) => !unit.preventRemoval && !unit.active && unit.deathXp < a ? unit.deathXp : a, Infinity);
+			if (minXP == Infinity){
+				return;
+			}
+			let unitMinXP = playerUnits.findIndex(unit => !unit.active && unit.deathXp == minXP && !unit.preventRemoval);
+			playerUnits.splice(unitMinXP, 1);
 		} else {
 			displayMessage("You can only have 10 total units - forget one by clicking the x before you can enter the caverns again.");
 			return;
 		}
 	}
+	runStart = Date.now();
+	runXp = 0;
+	document.querySelector("#start-button").classList.add("running");
 	loopCount++;
-	partyUnits.forEach((unit, i) => {
-		unit.refillHealth();
-		unit.character = playerSymbols[i+1];
-	})
 	let newPlayerUnit = new Unit(true, "You", baseStats, autobuyerUnit.ai.name, true, loopCount);
 	newPlayerUnit.character = playerSymbols[0];
 	playerUnits.push(newPlayerUnit);
+	partyUnits = playerUnits.filter(unit => unit.active);
+	partyUnits.forEach((unit, i) => {
+		unit.refillHealth();
+		unit.character = playerSymbols[(i+1) % 4];
+	})
 	displayCurrentUnit();
 	displayAllUnits();
 	currentLevel = 0;
@@ -71,8 +92,11 @@ function beginRun(){
 function loadNextMap(){
 	let partyUnits = playerUnits.filter(unit => unit.active).reverse();
 	// On moving to the next level, all player units come back to life
-	partyUnits.forEach(unit => unit.dead = false);
-	partyUnits.forEach(unit => unit.refillHealth());
+	// Unless in the NoRespawn challenge.
+	if (!activeChallenge || activeChallenge.name != "No Respawn"){
+		partyUnits.forEach(unit => unit.dead = false);
+		partyUnits.forEach(unit => unit.refillHealth());
+	}
 	maps[currentLevel].instantiate(partyUnits);
 	maps[currentLevel].draw();
 	maps[currentLevel].drawCreatures(partyUnits);
@@ -123,6 +147,7 @@ function displayAllUnits(){
 		unitEl.removeAttribute("id");
 		unitEl.querySelector(".total-xp").innerHTML = Math.floor(unit.getStatValue());
 		unitEl.querySelector(".spendable-xp").innerHTML = Math.floor(unit.xp);
+		if (!unit.current) unitEl.querySelector(".death-xp").innerHTML = `(${Math.floor(unit.deathXp)})`;
 		unitEl.querySelector(".character").innerHTML = unit.character;
 		unit.updateXP = () => {
 			unitEl.querySelector(".total-xp").innerHTML = Math.floor(unit.getStatValue());
@@ -174,7 +199,7 @@ function displayAllUnits(){
 function applyReward(reward){
 	if ((new Unit(false, "", {})).stats[reward] !== undefined){
 		// Check if the reward is a stat.
-		baseStats[reward] = 0;
+		baseStats[reward] = reward == "CriticalDamage" ? 2 : 0;
 		displayMessage(`You have learned the ${reward} skill!`);
 	} else if (lockedSettings[reward]) {
 		// Check if reward is a setting.
@@ -215,6 +240,9 @@ function applyReward(reward){
 }
 
 function runTick(){
+	offlineData.offlineTime += Date.now() - offlineData.lastTickTime - tickTime;
+	offlineTimeEl.innerHTML = formatNumber(offlineData.offlineTime / 1000);
+	offlineData.lastTickTime = Date.now();
 	let partyUnits = playerUnits.filter(unit => unit.active);
 	partyUnits.forEach(unit => unit.tick());
 	maps[currentLevel].tick(partyUnits);
@@ -241,8 +269,15 @@ function runTick(){
 }
 
 function grantXp(xp){
-	let currentUnit = playerUnits.find(unit => unit.current);
-	currentUnit.onKill(xp);
+	playerUnits.forEach(unit => {
+		if (unit.active) unit.onKill(xp);
+	});
+	runXp += xp;
+	let rate = runXp / ((Date.now() - runStart) / 1000);
+	if (rate > offlineData.xpPerSec) {
+		offlineData.xpPerSec = rate;
+		document.querySelector("#xp-per-sec").innerHTML = formatNumber(offlineData.xpPerSec);
+	}
 }
 
 function stopRun(){
@@ -251,6 +286,7 @@ function stopRun(){
 	let currentUnit = playerUnits.find(unit => unit.current);
 	if (currentUnit) {
 		currentUnit.current = false;
+		currentUnit.deathXp = currentUnit.getStatValue();
 	}
 	playerUnits.forEach(unit => unit.character = "");
 	currentLevel = 0;

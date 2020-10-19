@@ -28,6 +28,7 @@
 				<div class="character"></div>
 				<div class="summary-label">Total XP:</div>
 				<div class="total-xp"></div>
+				<div class="death-xp" title="How much xp this unit had when completing its delve.  The higher it is, the slower inactive xp gains slow down."></div>
 				<div class="summary-label">Free XP:</div>
 				<div class="spendable-xp"></div>
 				<div class="removal"></div>
@@ -54,12 +55,12 @@
 			<button id="autorun" class="option-button" onclick="toggleSetting('autorun')"></button>
 			<button id="auto-discard" class="option-button" onclick="toggleSetting('autoDiscard')"></button>
 			<button id="autobuyer" class="option-button" onclick="toggleSetting('autobuyer')"></button>
-			<button id="multi-xp" class="option-button" onclick="toggleSetting('multiXp')"></button>
-			<button id="repeat-messages" class="option-button" onclick="toggleSetting('hideRepeatMessages')"></button>
+			<button id="multi-xp" class="option-button" onclick="toggleSetting('multiXp')" oncontextmenu="toggleSetting('multiXp');toggleSetting('multiXp');toggleSetting('multiXp');event.preventDefault()"></button>
 			<button id="stop-button" onclick="stopRun()">Exit Dungeon</button>
 			<button id="save-button" onclick="save()" disabled title="Game saves automatically upon completing a floor.">Save Game</button>
 			<button id="export-button" onclick="exportGame()">Export</button>
 			<button id="import-button" onclick="importGame()">Import</button>
+			<button id="help-button" class="option-button" onclick="showHelp()">Help</button>
 			<div class="col-header">Messages</div>
 			<div id="messages"></div>
 		</div>
@@ -69,6 +70,10 @@
 				<table id="map"></table>
 			</div>
 			<div id="map-reward"></div>
+			<div id="offline-stats">
+				<div class="offline-data">Best XP/sec: <span id="xp-per-sec">0</span></div>
+				<div class="offline-data">Offline Time: <span id="offline-time">0</span>s</div>
+			</div>
 		</div>
 		<div id="party-wrapper" class="col party-col">
 			<div class="col-header">Party</div>
@@ -86,7 +91,7 @@
 		<div id="other-unit-wrapper" class="unit-col col">
 			<div class="col-header">Someone Else</div>
 			<div class="char-info">
-				XP:<div class="xp-amount"></div><br>
+				XP:<button id="offline-xp-button">+</button><div class="xp-amount"></div><br>
 				<span class="cap-breaker"><div class="cap-breaker-desc">Use these to increase the cap on some stats</div>Cap Breakers:</span><div class="cap-breakers"></div><br>
 				AI:<select class="ai"></select>
 			</div>

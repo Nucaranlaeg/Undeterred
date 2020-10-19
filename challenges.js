@@ -26,17 +26,20 @@ let activeChallenge = null;
 
 let challenges = {
 	LowDamage: new Challenge("Low Damage", "Delve without the ability to increase your damage.", gainBase("Damage", 2), "+2 Damage / floor", ["Damage"]),
-	LowHealth: new Challenge("Low Health", "Delve without the ability to increase your health.", gainBase("Health", 25), "+25 Health / floor", ["Health"]),
+	LowHealth: new Challenge("Low Health", "Delve without the ability to increase your health.", gainBase("Health", 20), "+20 Health / floor", ["Health"]),
 	PlusTwoLevels: new Challenge("Plus Two Levels", "Delve, but each monster is leveled up twice.", ()=>{}, "+0.5 XP / floor each floor", []),
-	Accuracy: new Challenge("Accuracy", "Delve, but all monsters have 10x as much To-Hit.", gainBase("Dodge", 4), "+4 Dodge / floor", []),
-	Criticality: new Challenge("Criticality", "Delve, but all attacks crit one additional time.", gainBase("Critical Damage", 0.04), "+4% Critical Damage / floor", []),
+	Accuracy: new Challenge("Accuracy", "Delve, but all monsters have 100x as much To-Hit.", gainBase("Protection", 2), "+2 Protection / floor", []),
+	Criticality: new Challenge("Criticality", "Delve, but all enemy attacks crit one additional time.", gainBase("CriticalDamage", 0.02), "+2% Critical Damage / floor", []),
+	NoOffense: new Challenge("No Offense", "Delve without the ability to increase any offensive stat.", gainBase("ToHit", 2), "+2 To Hit / floor", ["Damage", "ToHit", "Multiattack", "CriticalHit", "CriticalDamage"]),
+	NoDefense: new Challenge("No Defense", "Delve without the ability to increase any defensive stat.", gainBase("Dodge", 2), "+2 Dodge / floor", ["Health", "Dodge", "Protection", "Block", "Regeneration", "Vampirism", "Blunting"]),
+	NoRespawn: new Challenge("No Respawn", "Delve, but there is no healing between levels.", () => {}, "+5% regen effectiveness / floor", []),
 };
 
 function gainBase(stat, value){
 	return () => {
 		baseStats[stat] += value;
-		playerUnits.forEach(unit => unit.stats[stat].value += value);
-		autobuyerUnit.stats[stat].value = Math.max(autobuyerUnit.stats[stat].value, baseStats[stat]);
+		playerUnits.forEach(unit => unit.stats[stat].addBase(value));
+		autobuyerUnit.stats[stat].addBase(value);
 		calculateBaseStatValue();
 		displayCurrentUnit();
 		if (selectedUnit){
@@ -73,7 +76,11 @@ function displayChallenges(){
 
 function startChallenge(challenge){
 	activeChallenge = challenge;
-	if (challenge) playerUnits = [];
+	if (challenge){
+		playerUnits = [];
+		offlineData.xpPerSec = 0;
+		document.querySelector("#xp-per-sec").innerHTML = formatNumber(offlineData.xpPerSec);
+	}
 	clearAutobuy();
 	endRun();
 	displayChallenges();

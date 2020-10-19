@@ -8,10 +8,16 @@ class Stat {
 		this.locked = true;
 		this.cap = capMult > 0 ? xpMult * capMult + value : Infinity;
 		this.capIncrease = capMult > 0 ? xpMult * Math.ceil(capMult / 2) : 0;
+		this.breaks = 0;
 	}
 
 	unlock(){
 		this.locked = false;
+	}
+	
+	addBase(amount){
+		this.value += amount;
+		this.cap += amount;
 	}
 
 	onAttack(){}
@@ -48,14 +54,14 @@ class Stat {
 	increaseCap(){
 		if (this.cap == Infinity || this.capIncrease == 0) return false;
 		this.cap += this.capIncrease;
+		this.breaks++;
 		return true;
 	}
 
 	decreaseCap(){
-		if (this.cap == Infinity || this.capIncrease == 0) return false;
-		// If we haven't improved the cap...
-		if (this.cap <= this.capIncrease * 2.5) return false;
+		if (this.cap == Infinity || this.capIncrease == 0 || this.breaks == 0) return false;
 		this.cap -= this.capIncrease;
+		this.breaks--;
 		return true;
 	}
 
@@ -70,19 +76,13 @@ class Multiattack extends Stat {
 	}
 
 	onBeginAttack(attackStats){
-		let currentValue = this.value;
-		while (currentValue > 0){
-			if (Math.random() < Math.min(currentValue, 0.75)){
-				attackStats.attacks++;
-			}
-			currentValue -= 0.75;
-		}
+		attackStats.attacks += getOccurances(this.value);
 	}
 }
 
 class ToHit extends Stat {
 	constructor(value = 0){
-		super("To-Hit", value, 1, false, 0, "Increases your chance to hit by roughly 4% per point (decreasing as it gets higher), based on the target's Dodge.");
+		super("To-Hit", value, 1, false, 0, "Increases your chance to hit by roughly 2% per point (decreasing as it gets higher), based on the target's Dodge.");
 	}
 
 	onAttack(attackStats){
@@ -97,7 +97,7 @@ class ToHit extends Stat {
 
 class Dodge extends Stat {
 	constructor(value = 0){
-		super("Dodge", value, 1, false, 0, "Decreases your enemy's chance to hit by roughly 4% per point (decreasing as it gets higher), based on the attackers To Hit.");
+		super("Dodge", value, 1, false, 0, "Decreases your enemy's chance to hit by roughly 2% per point (decreasing as it gets higher), based on the attackers To Hit.");
 	}
 }
 
@@ -118,18 +118,13 @@ class CriticalHit extends Stat {
 
 	onHit(attackStats){
 		for (let i = 0; i < attackStats.hits; i++){
-			let currentValue = this.value;
-			let critCount = 0;
-			while (currentValue > 0){
-				if (Math.random() < Math.min(currentValue, 0.75)){
-					critCount++;
-				}
-				currentValue -= 0.75;
-			}
-			if (activeChallenge && activeChallenge.name == "Criticality"){
+			let critCount = getOccurances(this.value);
+			if (activeChallenge && activeChallenge.name == "Criticality" && !attackStats.attacker.playerOwned){
 				critCount++;
 			}
-			attackStats.damage += attackStats.attacker.stats.Damage.value * (attackStats.attacker.stats.CriticalDamage.value ** critCount - 1);
+			let critMult = attackStats.attacker.stats.CriticalDamage.value ** critCount - 1;
+			critMult *= 100 / (100 + attackStats.enemy.stats.Blunting.value);
+			attackStats.damage += attackStats.attacker.stats.Damage.value * critMult;
 		}
 	}
 }
@@ -137,6 +132,12 @@ class CriticalHit extends Stat {
 class CriticalDamage extends Stat {
 	constructor(value = 0){
 		super("Critical Damage", value, 0.01, true, 100, "Each time you score a critical hit, it multiplies your damage on that hit by this percent.");
+	}
+}
+
+class Blunting extends Stat {
+	constructor(value = 0){
+		super("Blunting", value, 0.01, true, 100, "Reduces the damage from critical hits (as protection, but only for the extra damage).");
 	}
 }
 
@@ -175,7 +176,7 @@ class Health extends Stat {
 
 class Block extends Stat {
 	constructor(value = 0){
-		super("Block", value, 0.3, false, 200, "Reduces the damage you take by 1 per point.");
+		super("Block", value, 0.2, false, 200, "Reduces the damage you take by 1 per point (after Protection).");
 	}
 
 	onTakeDamage(attackStats){
@@ -186,7 +187,7 @@ class Block extends Stat {
 
 class Protection extends Stat {
 	constructor(value = 0){
-		super("Protection", value, 1, false, 100, "Reduces the damage you take by roughly 1% per point (after Block).");
+		super("Protection", value, 1, false, 100, "Reduces the damage you take by roughly 1% per point (Damage / (Protection / 100 + 1)).");
 	}
 
 	onTakeDamage(attackStats){
@@ -200,7 +201,7 @@ class Regeneration extends Stat {
 	}
 
 	onTick(unit){
-		unit.stats.Health.heal(this.value);
+		unit.stats.Health.heal(this.value * (1 + 0.05 * challenges.NoRespawn.bestFloor));
 	}
 }
 
@@ -216,7 +217,8 @@ class Vampirism extends Stat {
 
 class Range extends Stat {
 	constructor(value = 1){
-		super("Range", value, 1, false, 1, "Attack units up to this far away.");
+		super("Range", value, 0.0025, false, 400, "Attack units up to this far away (requires 400 xp per point).");
+		this.capIncrease = 1;
 	}
 }
 
@@ -226,15 +228,7 @@ class Haste extends Stat {
 	}
 
 	getTicks(){
-		let ticks = 0;
-		let currentValue = this.value;
-		while (currentValue > 0){
-			if (Math.random() < Math.min(currentValue, 0.75)){
-				ticks++;
-			}
-			currentValue -= 0.75;
-		}
-		return ticks;
+		return getOccurances(this.value);
 	}
 }
 
@@ -253,7 +247,7 @@ class Bleed extends Stat {
 	}
 
 	onTakeDamage(attackStats){
-		attackStats.enemy.stats.bleed.value += attackStats.bleed;
+		attackStats.enemy.stats.Bleed.stacks += attackStats.bleed;
 	}
 }
 
@@ -275,4 +269,35 @@ class WoundReflection extends Stat {
 		Object.values(attackStats.enemy.stats).forEach(stat => stat.onTakeDamage(returnAttackStats));
 		attackStats.attacker.stats.Health.takeDamage(returnAttackStats);
 	}
+}
+
+class Mana extends Stat {
+	constructor(value = 10){
+		super("Mana", value, 1, true, 100, "Your ability to cast spells.");
+	}
+
+	heal(amount){
+		this.current = Math.min(this.value, this.current + amount);
+	}
+}
+
+class ManaRegeneration extends Stat {
+	constructor(value = 0){
+		super("Mana Regeneration", value, 0.1, false, 100, "Each tick, regain this much mana.");
+	}
+
+	onTick(unit){
+		unit.stats.Mana.heal(this.value);
+	}
+}
+
+function getOccurances(value){
+	let occurances = 0;
+	while (value > 0){
+		if (Math.random() < Math.min(value, 0.75)){
+			occurances++;
+		}
+		value -= 0.75;
+	}
+	return occurances;
 }

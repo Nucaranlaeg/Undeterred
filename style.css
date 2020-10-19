@@ -35,6 +35,11 @@ body * {
 	user-select: none;
 }
 
+.stat.disabled {
+	cursor: not-allowed !important;
+	color: #888888 !important;
+}
+
 .stat:nth-of-type(2n + 1) {
 	background-color: #555555;
 }
@@ -125,6 +130,16 @@ body * {
 #map-reward {
 	font-size: 14px;
 	text-align: center;
+}
+
+#offline-stats {
+	margin-top: 10px;
+	min-width: 150px;
+}
+
+#offline-xp-button {
+	display: none;
+	margin-left: 10px;
 }
 
 td {
@@ -244,9 +259,14 @@ td.not-visible {
 
 .spendable-xp,
 .total-xp {
-	display: inline-block;
-	width: calc(50% - 2px);
+	float: right;
 	text-align: right;
+}
+
+.death-xp {
+	float: right;
+	text-align: right;
+	padding-right: 5px;
 }
 
 .summary-label {
@@ -291,17 +311,15 @@ td.not-visible {
 	margin-top: 5px;
 }
 
-#export-button {
+#export-button,
+#import-button {
 	background-color: #2e6d2e;
 	border-color: #195e19;
 	color: #eeeeee;
 	margin-top: 5px;
 }
 
-#import-button {
-	background-color: #2e6d2e;
-	border-color: #195e19;
-	color: #eeeeee;
+#help-button {
 	margin: 5px 0;
 }
 

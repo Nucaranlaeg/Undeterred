@@ -110,7 +110,9 @@ function breadthFirstSearch(map, x, y, isTarget, ignoreCreatures){
 		[x-1, y, x-1, y],
 		[x, y-1, x, y-1],
 	];
+	shuffle(possibleMoves);
 	let directions = [[1, 0], [0, 1], [-1, 0], [0, -1]];
+	shuffle(directions);
 	possibleMoves = possibleMoves.filter(move => map.isEmpty(move[0], move[1]));
 	let examined = new Set([
 		x + "," + y,

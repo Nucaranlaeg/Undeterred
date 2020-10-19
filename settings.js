@@ -1,19 +1,20 @@
-let autoUnselectOptions = ["None", "Total", "Spent"];
-let multiXpOptions = [1, 10, 100, Infinity];
+let autoUnselectOptions = ["None", "Total", "Potential", "Spent"];
+let autoDiscardOptions = ["None", "Total", "Potential"];
+let multiXpOptions = [1, 10, 100, 1000];
 let settings = {
 	autoUnselect: "None",
 	autorun: false,
-	autoDiscard: false,
+	autoDiscard: "None",
 	autobuyer: true,
 	multiXp: 1,
 	showChallenges: false,
-	hideRepeatMessages: false,
 }
 
 let settingMessages = {
 	autoUnselect: [
 		"Do not automatically remove party members",
 		"Automatically remove the party member with the least experience",
+		"Automatically remove the party member with the least experience potential",
 		"Automatically remove the party member with the least assigned xp",
 	],
 	autorun: [
@@ -23,21 +24,18 @@ let settingMessages = {
 	autoDiscard: [
 		"Do not automatically forget units",
 		"Automatically forget the unit with the least experience",
+		"Automatically forget the unit with the least experience potential",
 	],
 	multiXp: [
 		"Assign 1 experience point at once",
 		"Assign up to 10 experience points at once",
 		"Assign up to 100 experience points at once",
-		"Assign all experience points at once",
+		"Assign up to 1000 experience points at once",
 	],
 	autobuyer: [
 		"Configure Autobuyer (Off)",
 		"Configure Autobuyer (On)",
 	],
-	hideRepeatMessages: [
-		"Show messages when you clear a floor for the first time since loading",
-		"Show messages when you clear a floor for the first time ever",
-	]
 }
 
 let lockedSettings = {
@@ -51,12 +49,19 @@ function toggleSetting(label){
 	if (lockedSettings[label]) return;
 	if (label == "autoUnselect") {
 		let index = autoUnselectOptions.findIndex(s => s == settings.autoUnselect);
-		index = (index + 1) % 3;
+		index = (index + 1) % autoUnselectOptions.length;
 		settings.autoUnselect = autoUnselectOptions[index];
+	} else if (label == "autoDiscard") {
+		let index = autoDiscardOptions.findIndex(s => s == settings.autoDiscard);
+		index = (index + 1) % autoDiscardOptions.length;
+		settings.autoDiscard = autoDiscardOptions[index];
 	} else if (label == "multiXp") {
 		let index = multiXpOptions.findIndex(s => s == settings.multiXp);
-		index = (index + 1) % 3;
+		index = (index + 1) % 4;
 		settings.multiXp = multiXpOptions[index];
+		if (selectedUnit){
+			selectedUnit.displayStatus();
+		}
 	} else if (label == "autobuyer"){
 		if (selectedUnit == autobuyerUnit){
 			settings.autobuyer = !settings.autobuyer;
@@ -73,10 +78,9 @@ function displaySettings(){
 	let options = document.querySelector(".options-col");
 	options.querySelector("#auto-unselect").innerHTML = settingMessages.autoUnselect[autoUnselectOptions.findIndex(s => s == settings.autoUnselect)];
 	options.querySelector("#autorun").innerHTML = settingMessages.autorun[+settings.autorun];
-	options.querySelector("#auto-discard").innerHTML = settingMessages.autoDiscard[+settings.autoDiscard];
+	options.querySelector("#auto-discard").innerHTML = settingMessages.autoDiscard[autoDiscardOptions.findIndex(s => s == settings.autoDiscard)];
 	options.querySelector("#multi-xp").innerHTML = settingMessages.multiXp[multiXpOptions.findIndex(s => s == settings.multiXp)];
 	options.querySelector("#autobuyer").innerHTML = settingMessages.autobuyer[+settings.autobuyer];
-	options.querySelector("#repeat-messages").innerHTML = settingMessages.hideRepeatMessages[+settings.hideRepeatMessages];
 	// Hide locked settings.
 	for (const [key, value] of Object.entries(lockedSettings)){
 		options.querySelector(`#${key.replace(/([A-Z])/, "-$1").toLowerCase()}`).style.display = value ? "none" : "block";
