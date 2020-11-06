@@ -6,6 +6,7 @@ class AutobuyerUnit extends Unit {
 		this.capBreakersUsed = 0;
 		this.stats.Health.value = 50;
 		this.stats.Damage.value = 5;
+		this.isAutobuyer = true;
 	}
 
 	unspendXp(stat){
@@ -51,18 +52,26 @@ class AutobuyerUnit extends Unit {
 		document.querySelector("#other-unit-wrapper .col-header").innerHTML = `${this.name} (${settings.autobuyer ? "Active" : "Inactive"})`;
 		maps[currentLevel].noHighlight(0);
 		unitElWrapper.querySelector("#offline-xp-button").style.display = "none";
+		unitElWrapper.querySelector(".role-wrapper").style.display = (this.name == "You" || this.isAutobuyer) && unlockedRoles ? "block" : "none";
 	}
 
 	unlock(stat){
 		this.stats[stat].locked = false;
 	}
+
+	changeRole(event){
+		viewedAutobuyerUnit = event.target.value;
+		autobuyerUnits[viewedAutobuyerUnit].display();
+	}
 }
 
 function clearAutobuy(){
-	for (let [key, value] of Object.entries(baseStats)){
-		if (!autobuyerUnit.stats[key]) continue; // What?  But this way is safer.
-		if (key == "CriticalDamage" && value < 2) value = 2;
-		autobuyerUnit.stats[key].value = value;
-	}
-	autobuyerUnit.display();
+	autobuyerUnits.forEach(autobuyer => {
+		for (let [key, value] of Object.entries(baseStats)){
+			if (!autobuyer.stats[key]) continue; // What?  But this way is safer.
+			if (key == "CriticalDamage" && value < 2) value = 2;
+			autobuyer.stats[key].value = value;
+		}
+	});
+	autobuyerUnits[0].display();
 }

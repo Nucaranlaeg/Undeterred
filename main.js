@@ -4,13 +4,15 @@ let currentLevel = 0;
 let maxUnits = 10;
 let tickInterval = null;
 let loopCount = 0;
-let tickTime = 250;
+let tickTime = 400;
 let selectedUnit = null;
 let baseStats = {
 	Health: 50,
 	Damage: 5,
 };
-let autobuyerUnit = new AutobuyerUnit();
+let autobuyerUnits = [new AutobuyerUnit(), new AutobuyerUnit(), new AutobuyerUnit(), new AutobuyerUnit()];
+let viewedAutobuyerUnit = 0;
+let unlockedRoles = false;
 let base_stat_value = 211;
 let bestLevel = 0;
 // Offline stuff
@@ -20,6 +22,7 @@ let offlineData = {
 	lastTickTime: Date.now(),
 }
 let offlineTimeEl = document.querySelector("#offline-time");
+let currentXpPerSecEl = document.querySelector("#current-xp-per-sec");
 let runStart = null;
 let runXp = 0;
 
@@ -31,22 +34,26 @@ calculateBaseStatValue();
 function beginRun(){
 	if (tickInterval) return;
 	let partyUnits = playerUnits.filter(unit => unit.active);
+	let lastUnitRole = 0;
 	while (partyUnits.length > 3){
+		let removedUnit = null;
 		if (settings.autoUnselect == "Total"){
 			let minXP = playerUnits.reduce((a, unit) => unit.active && (xp = unit.getStatValue()) < a ? xp : a, Infinity);
-			playerUnits.find(unit => unit.active && unit.getStatValue() == minXP).active = false;
+			removedUnit = playerUnits.find(unit => unit.active && unit.getStatValue() == minXP);
 		} else if (settings.autoUnselect == "Potential"){
 			let minXP = playerUnits.reduce((a, unit) => unit.active && unit.deathXp < a ? unit.deathXp : a, Infinity);
-			playerUnits.find(unit => unit.active && unit.deathXp == minXP).active = false;
+			removedUnit = playerUnits.find(unit => unit.active && unit.deathXp == minXP);
 		} else if (settings.autoUnselect == "Spent"){
 			let minXP = playerUnits.reduce((a, unit) => unit.active && (xp = unit.getSpentStatValue()) < a ? xp : a, Infinity);
 			let minTotalXP = playerUnits.reduce((a, unit) => unit.active && unit.getSpentStatValue() == minXP && (xp = unit.getStatValue()) < a ? xp : a, Infinity);
-			playerUnits.find(unit => unit.active && unit.getStatValue() == minTotalXP).active = false;
+			removedUnit = playerUnits.find(unit => unit.active && unit.getStatValue() == minTotalXP);
 		} else {
 			displayMessage("You must remove a unit from your party to enter the caverns again.")
 			displayHelpMessage("RemoveUnitsFromParty");
 			return;
 		}
+		removedUnit.active = false;
+		lastUnitRole = removedUnit.role;
 		partyUnits = playerUnits.filter(unit => unit.active);
 	}
 	partyUnits = playerUnits.filter(unit => unit.active);
@@ -74,7 +81,7 @@ function beginRun(){
 	runXp = 0;
 	document.querySelector("#start-button").classList.add("running");
 	loopCount++;
-	let newPlayerUnit = new Unit(true, "You", baseStats, autobuyerUnit.ai.name, true, loopCount);
+	let newPlayerUnit = new Unit(true, "You", baseStats, autobuyerUnits[lastUnitRole].ai.name, true, loopCount, lastUnitRole);
 	newPlayerUnit.character = playerSymbols[0];
 	playerUnits.push(newPlayerUnit);
 	partyUnits = playerUnits.filter(unit => unit.active);
@@ -117,9 +124,6 @@ function displayCurrentUnitStatus(){
 function displayEnemyUnits(){
 	let enemyDiv = document.querySelector("#enemy-creatures");
 	let unitSummaryTemplate = document.querySelector("#enemy-summary-template");
-	// while (enemyDiv.firstChild){
-	// 	enemyDiv.removeChild(enemyDiv.lastChild);
-	// }
 	maps[currentLevel].getVisibleEnemies().forEach(unit => {
 		if (unit.enemySummaryNode) return;
 		let unitEl = unitSummaryTemplate.cloneNode(true);
@@ -209,7 +213,7 @@ function applyReward(reward){
 	} else if (reward == "FasterTicks") {
 		tickTime *= 0.8;
 		// It really shouldn't ever drop this low, but just in case...
-		// With 4 FasterTicks, tickTime will be 102.4.
+		// With 6 FasterTicks, tickTime will be 104.8576.
 		if (tickTime < 100) tickTime = 100;
 		displayMessage(`Ticks are now 20% faster!`);
 	} else if (reward.split(" ")[0] == "Autobuyer") {
@@ -220,7 +224,7 @@ function applyReward(reward){
 		}
 		lockedSettings["autobuyer"] = false;
 		displaySettings();
-		autobuyerUnit.unlock(stat);
+		autobuyerUnits.forEach(autobuyer => autobuyer.unlock(stat));
 	} else if (reward.split(" ")[0] == "Challenge") {
 		let challenge = reward.split(" ")[1];
 		displayMessage(`You have unlocked the ${challenge} challenge!`);
@@ -246,6 +250,7 @@ function runTick(){
 	let partyUnits = playerUnits.filter(unit => unit.active);
 	partyUnits.forEach(unit => unit.tick());
 	maps[currentLevel].tick(partyUnits);
+	
 	if (maps[currentLevel].checkComplete()){
 		grantXp(challenges.PlusTwoLevels.bestFloor / 2);
 		displayChallenges();
@@ -266,6 +271,8 @@ function runTick(){
 	if (playerUnits.every(unit => unit.dead || !unit.active)){
 		endRun();
 	}
+	let rate = runXp / ((Date.now() - runStart) / 1000);
+	document.querySelector("#current-xp-per-sec").innerHTML = formatNumber(rate);
 }
 
 function grantXp(xp){
@@ -274,7 +281,7 @@ function grantXp(xp){
 	});
 	runXp += xp;
 	let rate = runXp / ((Date.now() - runStart) / 1000);
-	if (rate > offlineData.xpPerSec) {
+		if (rate > offlineData.xpPerSec) {
 		offlineData.xpPerSec = rate;
 		document.querySelector("#xp-per-sec").innerHTML = formatNumber(offlineData.xpPerSec);
 	}

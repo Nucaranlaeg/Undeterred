@@ -54,6 +54,29 @@ body * {
 	padding-left: 5px;
 }
 
+.condition {
+	width: calc(100% - 2px);
+	height: 20px;
+	position: relative;
+	user-select: none;
+}
+
+.condition.negative {
+	border: 2px solid #ff000077;
+}
+
+.condition.positive {
+	border: 2px solid #00ff0077;
+}
+
+.condition .name,
+.condition .value {
+    width: 47%;
+    display: inline-block;
+	text-align: center;
+	padding: 0;
+}
+
 .cap-wrapper {
 	float: right;
 	display: block;
@@ -70,20 +93,21 @@ body * {
 
 .description {
 	display: none;
-}
-
-.stat:hover .description {
-	display: block;
-	position: absolute;
-	top: 90%;
-	left: 10%;
 	border: 2px solid #555555;
 	border-radius: 5px;
 	background-color: #444444;
 	z-index: 5;
 	padding: 5px;
-	max-width: 100%;
 	pointer-events: none;
+	position: absolute;
+	top: 90%;
+	left: 10%;
+	max-width: 100%;
+	color: #dddddd;
+}
+
+*:hover > .description {
+	display: block;
 }
 
 .Health .current {
@@ -104,7 +128,7 @@ body * {
 
 .char-info {
 	padding: 5px;
-	height: 54px;
+	height: 71px;
 }
 
 .char-info div {
@@ -132,6 +156,10 @@ body * {
 	text-align: center;
 }
 
+#map-reward.complete {
+	color: #008000;
+}
+
 #offline-stats {
 	margin-top: 10px;
 	min-width: 150px;
@@ -140,6 +168,24 @@ body * {
 #offline-xp-button {
 	display: none;
 	margin-left: 10px;
+	padding: 0 5px;
+	line-height: 12px;
+	vertical-align: middle;
+	margin-top: -2px;
+	position: relative;
+}
+
+.offline-xp-button-desc {
+	top: 10px;
+	left: 10px;
+	max-width: 100px;
+	width: 100px;
+}
+
+.increment-button {
+	border-radius: 3px;
+    background-color: #ccc;
+    border-color: #aaa;
 }
 
 td {
@@ -302,6 +348,7 @@ td.not-visible {
 	border-color: #228222;
 	color: #eeeeee;
 	margin-top: 5px;
+	position: relative;
 }
 
 #stop-button {
@@ -339,21 +386,9 @@ td.highlight-0 {
 }
 
 .cap-breaker-desc {
-	position: absolute;
 	top: 15px;
 	left: 15px;
-	display: none;
-}
-
-.cap-breaker:hover .cap-breaker-desc {
-	display: block;
-	border: 2px solid #555555;
-	border-radius: 5px;
-	background-color: #444444;
-	z-index: 5;
-	padding: 5px;
 	width: 136px;
-	pointer-events: none;
 }
 
 #messages {
@@ -384,13 +419,15 @@ td.highlight-0 {
     padding: 5px;
 	user-select: none;
 	cursor: pointer;
+	position: relative;
 }
 
 .challenge:not(:first-of-type) {
     border-top: 1px solid #777777;
 }
 
-#challenge-confirm {
+#challenge-confirm,
+#export-wrapper {
 	display: none;
 	position: absolute;
 	top: 0;
@@ -400,7 +437,8 @@ td.highlight-0 {
 	background-color: #44444444;
 }
 
-#challenge-confirm-text {
+#challenge-confirm-text,
+#export-text {
 	width: 400px;
 	height: 200px;
 	position: absolute;
@@ -409,6 +447,11 @@ td.highlight-0 {
 	left: calc(50% - 200px);
 	padding: 10px;
 	border-radius: 10px;
+}
+
+#save-string {
+	width: calc(100% - 2px);
+	height: 80%;
 }
 
 .relative-wrapper {
@@ -450,15 +493,19 @@ td.highlight-0 {
     background-color: #220055;
 }
 
-.ai {
+.char-info select {
 	float: right;
 	background-color: #ffffff40;
 	border: 2px #ffffff30;
 	color: white;
 }
 
-.ai option {
+.char-info select option {
 	background-color: #404040;
+}
+
+.role-wrapper {
+	display: none;
 }
 
 /* For setting health bars above units */

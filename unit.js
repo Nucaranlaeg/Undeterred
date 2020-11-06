@@ -1,8 +1,11 @@
 class Unit {
-	constructor(playerOwned, name, stats, ai = "Simple", current = false, loopNumber = 0){
+	constructor(playerOwned, name, stats, ai = "Simple", current = false, loopNumber = 0, role = 0){
 		this.name = name;
 		// Which loop this unit was created on.
 		this.loopNumber = loopNumber;
+		// Which autobuyer this looks at.
+		this.role = role;
+		// If this unit belongs to the player.
 		this.playerOwned = playerOwned;
 		// If this unit is the current player.
 		this.current = current;
@@ -69,6 +72,12 @@ class Unit {
 		this.preventRemoval = false;
 		// For maintaining a better list of enemies.
 		this.enemySummaryNode = null;
+		// The conditions which can be applied to this unit
+		this.conditions = {
+			Bleeding: new Bleeding(),
+		};
+		// For checking that this is not an autobuyer.
+		this.isAutobuyer = false;
 	}
 	
 	attack(enemy){
@@ -146,6 +155,10 @@ class Unit {
 		}
 		this.updateXP();
 	}
+
+	changeRole(event){
+		this.role = event.target.value;
+	}
 	
 	display(forceCurrent){
 		let statTemplate = document.querySelector("#stat-template");
@@ -161,6 +174,7 @@ class Unit {
 				e.target.value = this.ai.name;
 			}
 		};
+		document.querySelector(this.current || forceCurrent ? "#current-unit-wrapper .role" : "#other-unit-wrapper .role").onchange = this.changeRole;
 		let unitEl = document.querySelector(this.current || forceCurrent ? "#current-unit" : "#other-unit");
 		while (unitEl.firstChild){
 			unitEl.removeChild(unitEl.lastChild);
@@ -208,10 +222,11 @@ class Unit {
 		if (this.current || forceCurrent){
 			unitElWrapper.querySelector(".ai").removeAttribute("disabled");
 		} else {
+			unitElWrapper.querySelector(".role-wrapper").style.display = (this.name == "You" || this.isAutobuyer) && unlockedRoles ? "block" : "none";
 			let offlineXpButton = unitElWrapper.querySelector("#offline-xp-button");
 			if (this.offlineTimeCost() < offlineData.offlineTime){
 				offlineXpButton.style.display = "inline-block";
-				offlineXpButton.title = `Cost for ${settings.multiXp} xp: ${formatNumber(this.offlineTimeCost() / 1000)}s`;
+				offlineXpButton.querySelector(".offline-xp-button-desc").innerHTML = `Cost for ${settings.multiXp} xp: ${formatNumber(this.offlineTimeCost() / 1000)}s`;
 				offlineXpButton.onclick = this.spendOfflineTime.bind(this);
 			} else {
 				offlineXpButton.style.display = "none";
@@ -225,6 +240,27 @@ class Unit {
 			document.querySelector(`#${this.current || forceCurrent ? "current" : "other"}-unit .Health .current`).style.width = `0%`;
 			maps[currentLevel].noHighlight(this.current || forceCurrent ? 1 : 0);
 		}
+		let conditionTemplate = document.querySelector("#condition-template");
+		let conditionWrapper = document.querySelector(this.current || forceCurrent ? "#current-conditions" : "#other-conditions");
+		Object.values(this.conditions).forEach(condition => {
+			if (!condition.isApplied) return;
+			let conditionEl = conditionWrapper.querySelector(`.${condition.getQualifiedName()}`);
+			if (!conditionEl){
+				conditionEl = conditionTemplate.cloneNode(true);
+				conditionEl.removeAttribute("id");
+				conditionEl.classList.add(condition.getQualifiedName());
+				conditionEl.querySelector(".name").innerHTML = condition.name;
+				conditionEl.classList.add(condition.type);
+				conditionWrapper.append(conditionEl);
+			}
+			if (condition.value == 0){
+				conditionEl.style.display = "none";
+			} else {
+				conditionEl.style.display = "block";
+				conditionEl.querySelector(".value").innerHTML = formatNumber(condition.value);
+				conditionEl.querySelector(".description").innerHTML = condition.description;
+			}
+		});
 	}
 
 	onKill(xp, kills = 1){
@@ -244,11 +280,11 @@ class Unit {
 	autobuy(){
 		if (!settings.autobuyer) return;
 		this.autobuyCapBreakers();
-		let autobuyStats = Object.keys(autobuyerUnit.stats);
+		let autobuyStats = Object.keys(autobuyerUnits[this.role].stats);
 		shuffle(autobuyStats);
 		let index = 0;
 		while (this.xp >= 1 && autobuyStats.length){
-			if (autobuyerUnit.stats[autobuyStats[index]].value - 0.001 > this.stats[autobuyStats[index]].value){
+			if (autobuyerUnits[this.role].stats[autobuyStats[index]].value - 0.001 > this.stats[autobuyStats[index]].value){
 				let startingValue = this.stats[autobuyStats[index]].value;
 				this.spendXp(autobuyStats[index], this.current, null, 1);
 				// If we're at the cap or something else prevents us from buying...
@@ -264,7 +300,7 @@ class Unit {
 
 	autobuyCapBreakers(){
 		if (!settings.autobuyer) return;
-		let autobuyStats = Object.entries(autobuyerUnit.stats).filter(stat => {
+		let autobuyStats = Object.entries(autobuyerUnits[this.role].stats).filter(stat => {
 			return this.stats[stat[0]].cap < stat[1].cap;
 		});
 		shuffle(autobuyStats);
@@ -285,6 +321,7 @@ class Unit {
 	tick(extraTicks = null){
 		if (this.dead) return;
 		Object.values(this.stats).forEach(s => s.onTick(this));
+		Object.values(this.conditions).forEach(s => s.onTick(this));
 		let move = this.ai.move(maps[currentLevel], this);
 		if (move.type == "attack"){
 			this.attack(move.enemy);
@@ -302,7 +339,7 @@ class Unit {
 
 	refillHealth(){
 		this.stats.Health.current = this.stats.Health.value;
-		this.stats.Bleed.stacks = 0;
+		Object.values(this.conditions).forEach(s => s.reset());
 	}
 
 	offlineTimeCost(){

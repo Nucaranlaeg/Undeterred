@@ -13,8 +13,13 @@
 				<div class="description"></div>
 				<div class="cap-wrapper">
 					<div class="cap"></div>
-					<button class="cap-increase">+</button>
+					<button class="cap-increase increment-button">+</button>
 				</div>
+			</div>
+			<div id="condition-template" class="stat condition">
+				<div class="name"></div>
+				<div class="value"></div>
+				<div class="description"></div>
 			</div>
 			<table>
 				<tr id="row-template"></tr>
@@ -57,9 +62,8 @@
 			<button id="autobuyer" class="option-button" onclick="toggleSetting('autobuyer')"></button>
 			<button id="multi-xp" class="option-button" onclick="toggleSetting('multiXp')" oncontextmenu="toggleSetting('multiXp');toggleSetting('multiXp');toggleSetting('multiXp');event.preventDefault()"></button>
 			<button id="stop-button" onclick="stopRun()">Exit Dungeon</button>
-			<button id="save-button" onclick="save()" disabled title="Game saves automatically upon completing a floor.">Save Game</button>
-			<button id="export-button" onclick="exportGame()">Export</button>
-			<button id="import-button" onclick="importGame()">Import</button>
+			<button id="save-button" onclick="trySave()">Save Game<div class="description">Game saves automatically upon completing a floor.</div></button>
+			<button id="export-button" onclick="openImportExport()">Import/Export</button>
 			<button id="help-button" class="option-button" onclick="showHelp()">Help</button>
 			<div class="col-header">Messages</div>
 			<div id="messages"></div>
@@ -72,6 +76,7 @@
 			<div id="map-reward"></div>
 			<div id="offline-stats">
 				<div class="offline-data">Best XP/sec: <span id="xp-per-sec">0</span></div>
+				<div class="offline-data">Current XP/sec: <span id="current-xp-per-sec">0</span></div>
 				<div class="offline-data">Offline Time: <span id="offline-time">0</span>s</div>
 			</div>
 		</div>
@@ -83,19 +88,37 @@
 			<div class="col-header">You</div>
 			<div class="char-info">
 				XP:<div class="xp-amount"></div><br>
-				<span class="cap-breaker"><div class="cap-breaker-desc">Use these to increase the cap on some stats</div>Cap Breakers:</span><div class="cap-breakers"></div><br>
-				AI:<select class="ai"></select>
+				<span class="cap-breaker"><div class="cap-breaker-desc description">Use these to increase the cap on some stats</div>Cap Breakers:</span><div class="cap-breakers"></div><br>
+				AI:<select class="ai"></select><br>
+				<span class="role-wrapper">
+					Role:<select class="role">
+						<option value="0">Primary</option>
+						<option value="1">Secondary</option>
+						<option value="2">Tertiary</option>
+						<option value="3">Quaternary</option>
+					</select>
+				</span>
 			</div>
 			<div id="current-unit" class="unit-col col"></div>
+			<div id="current-conditions"></div>
 		</div>
 		<div id="other-unit-wrapper" class="unit-col col">
 			<div class="col-header">Someone Else</div>
 			<div class="char-info">
-				XP:<button id="offline-xp-button">+</button><div class="xp-amount"></div><br>
-				<span class="cap-breaker"><div class="cap-breaker-desc">Use these to increase the cap on some stats</div>Cap Breakers:</span><div class="cap-breakers"></div><br>
-				AI:<select class="ai"></select>
+				XP:<button id="offline-xp-button" class="increment-button">+<div class="offline-xp-button-desc description"></div></button><div class="xp-amount"></div><br>
+				<span class="cap-breaker"><div class="cap-breaker-desc description">Use these to increase the cap on some stats</div>Cap Breakers:</span><div class="cap-breakers"></div><br>
+				AI:<select class="ai"></select><br>
+				<span class="role-wrapper">
+					Role:<select class="role">
+						<option value="0">Primary</option>
+						<option value="1">Secondary</option>
+						<option value="2">Tertiary</option>
+						<option value="3">Quaternary</option>
+					</select>
+				</span>
 			</div>
 			<div id="other-unit" class="unit-col col"></div>
+			<div id="other-conditions"></div>
 		</div>
 		<div id="enemies-wrapper" class="col party-col">
 			<div class="col-header">Enemy Creatures</div>
@@ -120,9 +143,19 @@
 				</div>
 			</div>
 		</div>
+		<div id="export-wrapper" onclick="document.querySelector('#export-wrapper').style.display = 'none'">
+			<div id="export-text" onclick="event.stopPropagation()">
+				<div class="relative-wrapper">
+					<textarea id="save-string"></textarea>
+					<button id="export-button" onclick="exportGame()">Export</button>
+					<button id="import-button" onclick="importGame()">Import</button>
+				</div>
+			</div>
+		</div>
 		<script src="settings.js"></script>
 		<script src="ai.js"></script>
 		<script src="stat.js"></script>
+		<script src="condition.js"></script>
 		<script src="unit.js"></script>
 		<script src="autobuyer.js"></script>
 		<script src="creatures.js"></script>

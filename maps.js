@@ -85,7 +85,13 @@ class Map {
 		if (!this.instantiated) return;
 		this.mapNodes = [];
 		document.querySelector("#map-title").innerHTML = this.mapName;
-		document.querySelector("#map-reward").innerHTML = "Reward: " + this.reward.replace(/ /, " - ").replace(/(\w)([A-Z])/g, "$1 $2");
+		let rewardEl = document.querySelector("#map-reward");
+		rewardEl.innerHTML = "Reward: " + this.reward.replace(/ /, " - ").replace(/(\w)([A-Z])/g, "$1 $2");
+		if (bestLevel > this.levelNo){
+			rewardEl.classList.add("complete");
+		} else {
+			rewardEl.classList.remove("complete");
+		}
 		let mapNode = document.querySelector("#map");
 		while (mapNode.firstChild){
 			mapNode.removeChild(mapNode.lastChild);

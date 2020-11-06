@@ -235,11 +235,6 @@ class Haste extends Stat {
 class Bleed extends Stat {
 	constructor(value = 1){
 		super("Bleed", value, 0.1, false, 100, "Attacks deal this much damage per tick for the rest of the level.");
-		this.stacks = 0;
-	}
-
-	onTick(unit){
-		unit.stats.Health.takeDamage({enemy: unit, damage: this.stacks});
 	}
 
 	onHit(attackStats){
@@ -247,7 +242,7 @@ class Bleed extends Stat {
 	}
 
 	onTakeDamage(attackStats){
-		attackStats.enemy.stats.Bleed.stacks += attackStats.bleed;
+		attackStats.enemy.conditions.Bleeding.increase(attackStats.bleed);
 	}
 }
 

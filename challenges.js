@@ -39,7 +39,7 @@ function gainBase(stat, value){
 	return () => {
 		baseStats[stat] += value;
 		playerUnits.forEach(unit => unit.stats[stat].addBase(value));
-		autobuyerUnit.stats[stat].addBase(value);
+		autobuyerUnits.forEach(autobuyer => autobuyer.stats[stat].addBase(value));
 		calculateBaseStatValue();
 		displayCurrentUnit();
 		if (selectedUnit){

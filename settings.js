@@ -63,11 +63,11 @@ function toggleSetting(label){
 			selectedUnit.displayStatus();
 		}
 	} else if (label == "autobuyer"){
-		if (selectedUnit == autobuyerUnit){
+		if (selectedUnit && selectedUnit.isAutobuyer){
 			settings.autobuyer = !settings.autobuyer;
 		}
-		autobuyerUnit.display();
-		selectedUnit = autobuyerUnit;
+		autobuyerUnits[viewedAutobuyerUnit].display();
+		selectedUnit = autobuyerUnits[viewedAutobuyerUnit];
 	} else {
 		settings[label] = !settings[label];
 	}

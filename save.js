@@ -1,3 +1,7 @@
+function trySave(){
+	if (!tickInterval) save();
+}
+
 function save(){
 	let saveGame = {
 		settings,
@@ -27,20 +31,24 @@ function save(){
 				deathXp: unit.deathXp,
 				ai: unit.ai.name,
 				preventRemoval: unit.preventRemoval,
+				role: unit.role,
 			};
 		}),
-		autobuy: {
-			stats: Object.values(autobuyerUnit.stats).filter(stat => !stat.locked).map(stat => {
-				return {
-					name: stat.getQualifiedName(),
-					cap: stat.cap,
-					value: stat.value,
-					breaks: stat.breaks,
-				};
-			}),
-			capBreakersUsed: autobuyerUnit.capBreakersUsed,
-			ai: autobuyerUnit.ai.name,
-		},
+		autobuy: autobuyerUnits.map(autobuyer => {
+			return {
+				stats: Object.values(autobuyer.stats).filter(stat => !stat.locked).map(stat => {
+					return {
+						name: stat.getQualifiedName(),
+						cap: stat.cap,
+						value: stat.value,
+						breaks: stat.breaks,
+					};
+				}),
+				capBreakersUsed: autobuyer.capBreakersUsed,
+				ai: autobuyer.ai.name,
+			};
+		}),
+		unlockedRoles,
 		activeChallenge: activeChallenge ? activeChallenge.name.replace(/ /g, "") : "",
 		challenges: Object.entries(challenges).map(challenge => {
 			return {
@@ -100,18 +108,27 @@ function load(){
 		unit.xp = unitData.xp;
 		unit.deathXp = unitData.deathXp;
 		unit.preventRemoval = unitData.preventRemoval;
+		unit.role = unitData.role;
 		return unit;
 	});
 	// Load autobuyer
 	// Should potentially use same system as loading units.
-	saveGame.autobuy.stats.forEach(stat => {
-		autobuyerUnit.stats[stat.name].cap = stat.cap || Infinity;
-		autobuyerUnit.stats[stat.name].value = stat.value;
-		autobuyerUnit.stats[stat.name].locked = false;
-		autobuyerUnit.stats[stat.name].breaks = stat.breaks;
+	autobuyerUnits.forEach(unit => {
+		Object.entries(baseStats).forEach(stat => {
+			unit.stats[stat[0]].value = stat[1];
+		});
 	});
-	autobuyerUnit.capBreakersUsed = saveGame.autobuy.capBreakersUsed;
-	autobuyerUnit.ai = ais[saveGame.autobuy.ai];
+	saveGame.autobuy.forEach((autobuyer, index) => {
+		autobuyer.stats.forEach(stat => {
+			autobuyerUnits[index].stats[stat.name].cap = stat.cap || Infinity;
+			autobuyerUnits[index].stats[stat.name].value = stat.value;
+			autobuyerUnits[index].stats[stat.name].locked = false;
+			autobuyerUnits[index].stats[stat.name].breaks = stat.breaks;
+		});
+		autobuyerUnits[index].capBreakersUsed = autobuyer.capBreakersUsed;
+		autobuyerUnits[index].ai = ais[autobuyer.ai];
+	});
+	unlockedRoles = saveGame.unlockedRoles;
 
 	activeChallenge = challenges[saveGame.activeChallenge] || null;
 	saveGame.challenges.forEach(challengeData => {
@@ -155,12 +172,18 @@ function load(){
 	displayAllUnits();
 }
 
+function openImportExport(){
+	document.querySelector("#export-wrapper").style.display = "inline-block";
+	document.querySelector("#save-string").value = localStorage.save;
+}
+
 function exportGame(){
+	document.querySelector("#save-string").value = localStorage.save;
 }
 
 function importGame(){
 	localStorage.backup = localStorage.save;
-	let importSave = "";
+	let importSave = document.querySelector("#save-string").value;
 	localStorage.save = importSave;
 	try {
 		load();
