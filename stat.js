@@ -267,7 +267,7 @@ class WoundReflection extends Stat {
 }
 
 class Mana extends Stat {
-	constructor(value = 10){
+	constructor(value = 0){
 		super("Mana", value, 1, true, 100, "Your ability to cast spells.");
 	}
 
@@ -278,7 +278,7 @@ class Mana extends Stat {
 
 class ManaRegeneration extends Stat {
 	constructor(value = 0){
-		super("Mana Regeneration", value, 0.1, false, 100, "Each tick, regain this much mana.");
+		super("Mana Regeneration", value, 0.01, false, 100, "Each tick, regain this much mana.");
 	}
 
 	onTick(unit){

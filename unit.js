@@ -27,6 +27,9 @@ class Unit {
 			Block: new Block(0),
 			Blunting: new Blunting(0),
 			Vampirism: new Vampirism(0),
+			// Magic
+			Mana: new Mana(0),
+			ManaRegeneration: new ManaRegeneration(0),
 			// Other
 			Range: new Range(1),
 			// Non-Combat
@@ -78,6 +81,8 @@ class Unit {
 		};
 		// For checking that this is not an autobuyer.
 		this.isAutobuyer = false;
+		// This unit's selected spell.
+		this.spell = null;
 	}
 	
 	attack(enemy){
@@ -219,10 +224,10 @@ class Unit {
 		unitElWrapper.querySelector(".xp-amount").innerHTML = Math.floor(this.xp);
 		unitElWrapper.querySelector(".cap-breakers").innerHTML = this.capBreakers;
 		unitElWrapper.querySelector(".ai").value = this.ai.name;
+		unitElWrapper.querySelector(".role-wrapper").style.display = (this.name == "You" || this.isAutobuyer) && unlockedRoles ? "block" : "none";
 		if (this.current || forceCurrent){
 			unitElWrapper.querySelector(".ai").removeAttribute("disabled");
 		} else {
-			unitElWrapper.querySelector(".role-wrapper").style.display = (this.name == "You" || this.isAutobuyer) && unlockedRoles ? "block" : "none";
 			let offlineXpButton = unitElWrapper.querySelector("#offline-xp-button");
 			if (this.offlineTimeCost() < offlineData.offlineTime){
 				offlineXpButton.style.display = "inline-block";
@@ -323,6 +328,9 @@ class Unit {
 		Object.values(this.stats).forEach(s => s.onTick(this));
 		Object.values(this.conditions).forEach(s => s.onTick(this));
 		let move = this.ai.move(maps[currentLevel], this);
+		if (this.spell && this.spell.tryCast(this)){
+			move = {};
+		}
 		if (move.type == "attack"){
 			this.attack(move.enemy);
 		} else if (move.type == "move"){
@@ -353,7 +361,7 @@ class Unit {
 			this.xp += settings.multiXp;
 			this.autobuy();
 			this.updateXP();
-			this.displayStatus(false);
+			this.display(false);
 			offlineTimeEl.innerHTML = formatNumber(offlineData.offlineTime / 1000);
 		}
 	}

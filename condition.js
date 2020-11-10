@@ -23,6 +23,10 @@ class Condition {
 
 	onTick(){}
 
+	isOverCleanseThreshold(){}
+
+	cleanse(){}
+
 	getQualifiedName(){
 		return this.name.replace(/[- ]/g, "");
 	}
@@ -35,5 +39,13 @@ class Bleeding extends Condition {
 
 	onTick(unit){
 		unit.stats.Health.takeDamage({enemy: unit, damage: this.value});
+	}
+
+	isOverCleanseThreshold(unit){
+		return this.value > unit.stats.Health.current / 50;
+	}
+
+	cleanse(){
+		this.value *= 0.75;
 	}
 }

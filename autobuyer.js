@@ -41,6 +41,7 @@ class AutobuyerUnit extends Unit {
 				e.preventDefault();
 			};
 		});
+		document.querySelector("#other-conditions").innerHTML = "";
 	}
 
 	displayStatus(){

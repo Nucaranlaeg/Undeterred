@@ -6,7 +6,6 @@ function save(){
 	let saveGame = {
 		settings,
 		lockedSettings,
-		saveTime: Date.now() - fastTime * 1000,
 		loopCount,
 		baseStats,
 		tickTime,
@@ -75,6 +74,7 @@ function save(){
 
 function load(){
 	if (localStorage.save === undefined) return;
+	clearInterval(tickInterval);
 	let saveGame = JSON.parse(atob(localStorage.save));
 	for (const [key, value] of Object.entries(saveGame.settings)){
 		settings[key] = value;
@@ -82,7 +82,6 @@ function load(){
 	for (const [key, value] of Object.entries(saveGame.lockedSettings)){
 		lockedSettings[key] = value;
 	}
-	fastTime = Date.now() - saveGame.saveTime;
 	loopCount = saveGame.loopCount;
 	baseStats = saveGame.baseStats;
 	tickTime = saveGame.tickTime;

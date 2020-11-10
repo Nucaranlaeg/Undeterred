@@ -1,5 +1,5 @@
 class Challenge {
-	constructor(name, description, reward, rewardDescription, illegalStats){
+	constructor(name, description, reward, rewardDescription, illegalStats, completeLevel, completeReward){
 		this.name = name;
 		this.description = description;
 		this.reward = reward;
@@ -7,17 +7,27 @@ class Challenge {
 		this.illegalStats = illegalStats;
 		this.locked = true;
 		this.bestFloor = 0;
+		this.completeLevel = completeLevel;
+		this.completeReward = completeReward;
 	}
 
 	isIllegal(stat){
-		return this.illegalStats.includes(stat.name);
+		return this.illegalStats.includes(stat.getQualifiedName());
 	}
 
 	updateReward(){
+		if (this.bestFloor > this.completeLevel){
+			startChallenge(null);
+			return;
+		}
 		while (this.bestFloor <= currentLevel){
-			// Should only ever happen once...
+			// Should only ever happen once at a time...
 			this.reward();
 			this.bestFloor++;
+		}
+		if (this.bestFloor == this.completeLevel){
+			this.completeReward();
+			startChallenge(null);
 		}
 	}
 }
@@ -25,26 +35,34 @@ class Challenge {
 let activeChallenge = null;
 
 let challenges = {
-	LowDamage: new Challenge("Low Damage", "Delve without the ability to increase your damage.", gainBase("Damage", 2), "+2 Damage / floor", ["Damage"]),
-	LowHealth: new Challenge("Low Health", "Delve without the ability to increase your health.", gainBase("Health", 20), "+20 Health / floor", ["Health"]),
-	PlusTwoLevels: new Challenge("Plus Two Levels", "Delve, but each monster is leveled up twice.", ()=>{}, "+0.5 XP / floor each floor", []),
-	Accuracy: new Challenge("Accuracy", "Delve, but all monsters have 100x as much To-Hit.", gainBase("Protection", 2), "+2 Protection / floor", []),
-	Criticality: new Challenge("Criticality", "Delve, but all enemy attacks crit one additional time.", gainBase("CriticalDamage", 0.02), "+2% Critical Damage / floor", []),
-	NoOffense: new Challenge("No Offense", "Delve without the ability to increase any offensive stat.", gainBase("ToHit", 2), "+2 To Hit / floor", ["Damage", "ToHit", "Multiattack", "CriticalHit", "CriticalDamage"]),
-	NoDefense: new Challenge("No Defense", "Delve without the ability to increase any defensive stat.", gainBase("Dodge", 2), "+2 Dodge / floor", ["Health", "Dodge", "Protection", "Block", "Regeneration", "Vampirism", "Blunting"]),
-	NoRespawn: new Challenge("No Respawn", "Delve, but there is no healing between levels.", () => {}, "+5% regen effectiveness / floor", []),
+	LowDamage: new Challenge("Low Damage", "Delve without the ability to increase your damage.  After beating level 20, improves to the No Offense challenge.", gainBase([["Damage", 2]]), "+2 Damage", ["Damage"], 20, unlockChallenge("NoOffense")),
+	LowHealth: new Challenge("Low Health", "Delve without the ability to increase your health.  After beating level 20, improves to the No Defense challenge.", gainBase([["Health", 20]]), "+20 Health", ["Health"], 20, unlockChallenge("NoDefense")),
+	PlusTwoLevels: new Challenge("Plus Two Levels", "Delve, but each monster is leveled up twice.", ()=>{}, "+0.5 XP each floor", []),
+	Accuracy: new Challenge("Accuracy", "Delve, but all monsters have 100x as much To-Hit.", gainBase([["Protection", 2]]), "+2 Protection", []),
+	Criticality: new Challenge("Criticality", "Delve, but all enemy attacks crit one additional time.", gainBase([["CriticalDamage", 0.02]]), "+2% Critical Damage", []),
+	NoOffense: new Challenge("No Offense", "Delve without the ability to increase any offensive stat.", gainBase([["ToHit", 2], ["Damage", 2]]), "+2 To-Hit & Damage", ["Damage", "ToHit", "Multiattack", "CriticalHit", "CriticalDamage", "Bleed"]),
+	NoDefense: new Challenge("No Defense", "Delve without the ability to increase any defensive stat.", gainBase([["Dodge", 2], ["Health", 20]]), "+2 Dodge & +20 Health", ["Health", "Dodge", "Protection", "Block", "Regeneration", "Vampirism", "Blunting"]),
+	NoRespawn: new Challenge("Restless", "Delve, but there is no healing between levels.", () => {}, "+5% regen effectiveness", []),
 };
 
-function gainBase(stat, value){
+function gainBase(stats){
 	return () => {
-		baseStats[stat] += value;
-		playerUnits.forEach(unit => unit.stats[stat].addBase(value));
-		autobuyerUnits.forEach(autobuyer => autobuyer.stats[stat].addBase(value));
+		stats.forEach(([stat, value]) => {
+			baseStats[stat] += value;
+			playerUnits.forEach(unit => unit.stats[stat].addBase(value));
+			autobuyerUnits.forEach(autobuyer => autobuyer.stats[stat].addBase(value));
+		});
 		calculateBaseStatValue();
 		displayCurrentUnit();
 		if (selectedUnit){
 			selectedUnit.display();
 		}
+	};
+}
+
+function unlockChallenge(name){
+	return () => {
+		applyReward(`Challenge ${name}`);
 	};
 }
 
@@ -57,7 +75,7 @@ function displayChallenges(){
 	}
 	let challengeTemplate = document.querySelector("#challenge-template");
 	for (let challenge of Object.values(challenges)){
-		if (challenge.locked) continue;
+		if (challenge.locked || (challenge.completeLevel && challenge.bestFloor == challenge.completeLevel)) continue;
 		let cEl = challengeTemplate.cloneNode(true);
 		cEl.removeAttribute("id");
 		cEl.querySelector(".name").innerHTML = challenge.name;
@@ -80,8 +98,8 @@ function startChallenge(challenge){
 		playerUnits = [];
 		offlineData.xpPerSec = 0;
 		document.querySelector("#xp-per-sec").innerHTML = formatNumber(offlineData.xpPerSec);
+		clearAutobuy();
 	}
-	clearAutobuy();
 	endRun();
 	displayChallenges();
 	document.querySelector("#challenge-confirm").style.display = "none";

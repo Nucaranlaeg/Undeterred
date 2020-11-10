@@ -4,7 +4,7 @@ let currentLevel = 0;
 let maxUnits = 10;
 let tickInterval = null;
 let loopCount = 0;
-let tickTime = 400;
+let tickTime = 250;
 let selectedUnit = null;
 let baseStats = {
 	Health: 50,
@@ -25,6 +25,7 @@ let offlineTimeEl = document.querySelector("#offline-time");
 let currentXpPerSecEl = document.querySelector("#current-xp-per-sec");
 let runStart = null;
 let runXp = 0;
+let lagTime = 0;
 
 function calculateBaseStatValue(){
 	base_stat_value += (new Unit(true, "You", baseStats)).getSpentStatValue();
@@ -52,8 +53,10 @@ function beginRun(){
 			displayHelpMessage("RemoveUnitsFromParty");
 			return;
 		}
-		removedUnit.active = false;
-		lastUnitRole = removedUnit.role;
+		if (removedUnit) {
+			removedUnit.active = false;
+			lastUnitRole = removedUnit.role;
+		}
 		partyUnits = playerUnits.filter(unit => unit.active);
 	}
 	partyUnits = playerUnits.filter(unit => unit.active);
@@ -85,8 +88,8 @@ function beginRun(){
 	newPlayerUnit.character = playerSymbols[0];
 	playerUnits.push(newPlayerUnit);
 	partyUnits = playerUnits.filter(unit => unit.active);
+	resetHealth(partyUnits);
 	partyUnits.forEach((unit, i) => {
-		unit.refillHealth();
 		unit.character = playerSymbols[(i+1) % 4];
 	})
 	displayCurrentUnit();
@@ -100,9 +103,8 @@ function loadNextMap(){
 	let partyUnits = playerUnits.filter(unit => unit.active).reverse();
 	// On moving to the next level, all player units come back to life
 	// Unless in the NoRespawn challenge.
-	if (!activeChallenge || activeChallenge.name != "No Respawn"){
-		partyUnits.forEach(unit => unit.dead = false);
-		partyUnits.forEach(unit => unit.refillHealth());
+	if (!activeChallenge || activeChallenge.name != "Restless"){
+		resetHealth(partyUnits);
 	}
 	maps[currentLevel].instantiate(partyUnits);
 	maps[currentLevel].draw();
@@ -113,8 +115,15 @@ function loadNextMap(){
 	}
 }
 
+function resetHealth(partyUnits){
+	partyUnits.forEach(unit => unit.dead = false);
+	partyUnits.forEach(unit => unit.refillHealth());
+	document.querySelector("#current-conditions").innerHTML = "";
+	document.querySelector("#other-conditions").innerHTML = "";
+}
+
 function displayCurrentUnit(){
-	playerUnits.find(unit => unit.current).display();
+	(playerUnits.find(unit => unit.current) || playerUnits[playerUnits.length - 1]).display();
 }
 
 function displayCurrentUnitStatus(){
@@ -213,9 +222,12 @@ function applyReward(reward){
 	} else if (reward == "FasterTicks") {
 		tickTime *= 0.8;
 		// It really shouldn't ever drop this low, but just in case...
-		// With 6 FasterTicks, tickTime will be 104.8576.
+		// With 4 FasterTicks, tickTime will be 102.4.
 		if (tickTime < 100) tickTime = 100;
 		displayMessage(`Ticks are now 20% faster!`);
+	} else if (reward == "Roles") {
+		unlockedRoles = true;
+		displayMessage(`You can now assign party roles and have 4 distinct autobuyers!`);
 	} else if (reward.split(" ")[0] == "Autobuyer") {
 		let stat = reward.split(" ")[1];
 		displayMessage(`You have unlocked the Autobuyer for ${stat}!`);
@@ -244,9 +256,19 @@ function applyReward(reward){
 }
 
 function runTick(){
-	offlineData.offlineTime += Date.now() - offlineData.lastTickTime - tickTime;
-	offlineTimeEl.innerHTML = formatNumber(offlineData.offlineTime / 1000);
+	lagTime += Date.now() - offlineData.lastTickTime - tickTime;
 	offlineData.lastTickTime = Date.now();
+	if (lagTime > tickTime){
+		offlineData.offlineTime += lagTime - tickTime;
+		offlineTimeEl.innerHTML = formatNumber(offlineData.offlineTime / 1000);
+		lagTime = tickTime;
+	}
+	// If the game is running slowly, do an additional tick.
+	// This prevents building up offline time if the game is running slowly.
+	if (lagTime == tickTime){
+		lagTime = 0;
+		runTick();
+	}
 	let partyUnits = playerUnits.filter(unit => unit.active);
 	partyUnits.forEach(unit => unit.tick());
 	maps[currentLevel].tick(partyUnits);

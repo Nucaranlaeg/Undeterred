@@ -20,7 +20,6 @@ class Map {
 	instantiate(player_units){
 		if (this.instantiated) return;
 		this.instantiated = true;
-		let levelMult = 1 / (Math.log(LEVEL_MULT_BASE + this.deaths) / Math.log(LEVEL_MULT_BASE));
 		this.map = this.layout.map((row, y) => {
 			row = row.split("");
 			row = row.map((cell, x) => {
@@ -32,21 +31,33 @@ class Map {
 					}
 					return ".";
 				}
-				let enemy = creatures[cell];
-				enemy.level = (enemy.base_level + this.levelNo) * levelMult;
-				let enemyUnit = new Unit(false, enemy.name, enemy, enemy.ai || "Simple");
-				enemyUnit.x = x;
-				enemyUnit.y = y;
-				enemyUnit.xp = enemy.xp;
-				enemyUnit.name = enemy.name;
-				enemyUnit.character = cell;
-				enemyUnit.refillHealth();
-				this.enemies.push(enemyUnit);
+				this.summon(x, y, cell);
 				return ".";
 			});
 			row = row.map(c => [c, false]);
 			return row;
 		});
+	}
+	
+	summon(x, y, creature, levelOverride = null){
+		let levelMult = 1 / (Math.log(LEVEL_MULT_BASE + this.deaths) / Math.log(LEVEL_MULT_BASE));
+		let enemy = creatures[creature];
+		if (levelOverride){
+			enemy.level = levelOverride * levelMult;
+		} else {
+			enemy.level = Math.min((enemy.base_level + this.levelNo), (enemy.base_level + this.levelNo + (enemy.level_softcap || Infinity)) / 2) * levelMult;
+		}
+		let enemyUnit = new Unit(false, enemy.name, enemy, enemy.ai || "Simple");
+		enemyUnit.x = x;
+		enemyUnit.y = y;
+		enemyUnit.xp = enemy.xp;
+		enemyUnit.name = enemy.name;
+		enemyUnit.character = creature;
+		enemyUnit.refillHealth();
+		if (enemy.spell){
+			enemyUnit.spell = enemy.spell;
+		}
+		this.enemies.push(enemyUnit);
 	}
 
 	checkComplete(){
@@ -197,7 +208,7 @@ class Map {
 		return this.map[y][x][1];
 	}
 
-	isEmpty(x, y, ignoreCreatures){
+	isEmpty(x, y, ignoreCreatures = false){
 		return this.map[y] && this.map[y][x] && this.map[y][x][0] == "." && (ignoreCreatures || (!this.enemies.some(enemy => enemy.x == x && enemy.y == y && !enemy.dead) && !playerUnits.some(unit => unit.x == x && unit.y == y && !unit.dead && unit.active)));
 	}
 
@@ -246,12 +257,18 @@ const classMapping = {
 *	18	78	731
 *	19	84	815
 *	20	90	905
-*	*******GOBS+GOLEMS*******
+*	*******GOLEMS*******
 *	21	81	986
 *	22	89	1075
 *	23	97	1172
+*	*******UNDEAD*******
 *	24	105	1277
 *	25	113	1390
+*	26	121	1511
+*	27	129	1640
+*	28	137	1777
+*	29	145	1922
+*	30	153	2075 (Actually 100 + summons)
 */
 
 maps.push(new Map("Level 1",
@@ -472,7 +489,7 @@ maps.push(new Map("Level 10",
 					 "#################"],
 					4,
 					"CriticalHit",
-					"You are undeterred by the fierce resistance, glad to have broken through the anthill.  What's next?  You can't say."));
+					"You have pushed through some fierce resistance, and are glad to have broken through the anthill.  What's next?  You can't say.  You press on, undeterred."));
 
 maps.push(new Map("Level 11",
 					["###########",
@@ -681,7 +698,7 @@ maps.push(new Map("Level 20",
 					 "#################"],
 					4,
 					"CriticalDamage",
-					"The hobgoblin does not go down easy.  It's worrying that most of what you've encountered has shown up later in a stronger form."));
+					"The hobgoblin does not go down easy.  It's worrying that most of what you've encountered has shown up later in a stronger form.  You press on, undeterred."));
 
 maps.push(new Map("Level 21",
 					["######################",
@@ -814,32 +831,92 @@ maps.push(new Map("Level 25",
 
 maps.push(new Map("Level 26",
 					["#######################",
-					 "#12...................#",
-					 "#34...................#",
-					 "#..hh.................#",
-					 "#..hh.................#",
-					 "#.....................#",
-					 "#.....................#",
-					 "#.....................#",
-					 "#.....................#",
-					 "#.....................#",
-					 "#.....................#",
-					 "#.....................#",
-					 "#.....................#",
-					 "#.....................#",
-					 "#.....................#",
-					 "#.....................#",
-					 "#.....................#",
-					 "#.....................#",
-					 "#.....................#",
+					 "#12..z.G.....G.....G..#",
+					 "#34..z##zzz.#########.#",
+					 "#....z#####......G###.#",
+					 "#...zz##Gz#.##G.#.....#",
+					 "#zzzzR##..#.....#.#####",
+					 "#.###.......#####...G.#",
+					 "#.G.####..#.....##.#..#",
+					 "###.zzz#Gz#####G...#.##",
+					 "#...##.####.G.#.####.G#",
+					 "#.G..............G....#",
+					 "#######################"],
+					4,
+					"Roles",
+					"What a frustrating creature, attacking you before retreating behind the golems.  It's a good thing you're faster than it is."));
+
+maps.push(new Map("Level 27",
+					["#######################",
+					 "#12.............#....##",
+					 "#34......#....z.#..R..#",
+					 "#........#......#.....#",
+					 "#........#......#.....#",
+					 "#..z....R.......#.....#",
+					 "#..########....R......#",
+					 "#...........########..#",
+					 "#...#.......z.........#",
+					 "#...#.z.......#.......#",
+					 "#...#.#######.#...z...#",
+					 "#...#.........#.......#",
+					 "#...#R.....z..#.#####.#",
+					 "#...#.........#.......#",
+					 "#.z...........#..R....#",
+					 "#.###########.#.......#",
+					 "#.............#.......#",
+					 "#..R....z.....#....z..#",
+					 "##...................##",
 					 "#######################"],
 					4,
 					"Autobuyer CriticalDamage",
-					"Though the zombies individually are no match for you, they are a powerful force when massed, and the golems serve as their champions."));
+					"The revenants play a clever game: force you to attack the one while the other regenerates."));
+
+maps.push(new Map("Level 28",
+					["#######################",
+					 "#12.............#....##",
+					 "#34......#....z.#..R..#",
+					 "#........#......#.....#",
+					 "#........#......#.....#",
+					 "#..z....R.......#.....#",
+					 "#..########....R......#",
+					 "#...........########..#",
+					 "#...#.......z.........#",
+					 "#...#.z.......#.......#",
+					 "#...#.#######.#...z...#",
+					 "#...#.........#.......#",
+					 "#...#R.....z..#.#####.#",
+					 "#...#.........#.......#",
+					 "#.z...........#..R....#",
+					 "#.###########.#.......#",
+					 "#.............#.......#",
+					 "#..R....z.....#....z..#",
+					 "##...................##",
+					 "#######################"],
+					4,
+					"FasterTicks",
+					"It's hard to believe that the revenants occur naturally here, even moreso than any of the other creatures here.  Could someone have raised them intentionally?"));
+
+maps.push(new Map("Level 29",
+					["#######################",
+					 "#12..#...z...R.#.z...z#",
+					 "#34..#.zz..z.z.#..z...#",
+					 "#...z#...z.....#.z...z#",
+					 "#.z..#....#R.z.#...z..#",
+					 "#..z.#z.z.#z...#z..z..#",
+					 "#...R#....#...z#.....z#",
+					 "#z...#...z#..z.#..z..z#",
+					 "#...z#z...#z...#R.....#",
+					 "#z...z....#....z.z..z.#",
+					 "#.z.....R.#.z..z....z.#",
+					 "#..z..z..z#..z.....z.z#",
+					 "#######################"],
+					4,
+					"Autobuyer Block",
+					"It's hard to believe that the revenants occur naturally here, even moreso than any of the other creatures here.  Could someone have raised them intentionally?"));
 
 maps.push(new Map("Level 30",
 					["#######################",
-					 "#12...................#",
+					 "#12..................R#",
 					 "#34...................#",
 					 "#.._________________..#",
 					 "#.._..............._..#",
@@ -857,16 +934,16 @@ maps.push(new Map("Level 30",
 					 "#.._..................#",
 					 "#.._______________....#",
 					 "#.....................#",
-					 "#.....................#",
+					 "#R....................#",
 					 "#######################"],
-					10,
-					"Range",
-					"A summoner is a potent threat, much more dangerous than many of the other creatures in these caverns.  Dead now, though."));
+					12,
+					"Autobuyer Regeneration",
+					"A summoner is a potent threat, much more dangerous than many of the other creatures in these caverns.  Dead now, though.  You might have thought that the necromancer was the creator of these caves, but you see a path leading to deeper, more natural caverns.  You press on, undeterred."));
 
 maps.push(new Map("END",
 					["######",
-					 "#12.q#",
-					 "#34.h#",
+					 "#12Gq#",
+					 "#34Gh#",
 					 "######"],
 					3,
 					"",
