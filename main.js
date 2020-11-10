@@ -49,7 +49,7 @@ function beginRun(){
 			let minTotalXP = playerUnits.reduce((a, unit) => unit.active && unit.getSpentStatValue() == minXP && (xp = unit.getStatValue()) < a ? xp : a, Infinity);
 			removedUnit = playerUnits.find(unit => unit.active && unit.getStatValue() == minTotalXP);
 		} else {
-			displayMessage("You must remove a unit from your party to enter the caverns again.")
+			displayMessage("You must remove a unit from your party to enter the caverns again - you can only have 4 units total in your party, counting the new one.")
 			displayHelpMessage("RemoveUnitsFromParty");
 			return;
 		}

@@ -73,7 +73,10 @@ function save(){
 }
 
 function load(){
-	if (localStorage.save === undefined) return;
+	if (localStorage.save === undefined){
+		displayMessage(`Use the "Enter the Dungeon" button to start the game.  If you're confused, try the "Help" button or the Discord.`)
+		return;
+	}
 	clearInterval(tickInterval);
 	let saveGame = JSON.parse(atob(localStorage.save));
 	for (const [key, value] of Object.entries(saveGame.settings)){
