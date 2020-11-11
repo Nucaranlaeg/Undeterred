@@ -35,6 +35,11 @@ calculateBaseStatValue();
 
 function beginRun(){
 	if (tickInterval) return;
+	let currentUnit = playerUnits.find(unit => unit.current);
+	if (currentUnit) {
+		currentUnit.current = false;
+		currentUnit.deathXp = currentUnit.getStatValue();
+	}
 	let partyUnits = playerUnits.filter(unit => unit.active);
 	let lastUnitRole = 0;
 	while (partyUnits.length > 3){
@@ -168,11 +173,7 @@ function displayAllUnits(){
 			unitEl.querySelector(".spendable-xp").innerHTML = Math.floor(unit.xp);
 		}
 		unitEl.querySelector(".loop-count").innerHTML = unit.loopNumber;
-		unitEl.querySelector(".removal").innerHTML = unit.preventRemoval ? "Cannot be deleted" : "Can be deleted";
-		let showKillButton = () => {
-			unitEl.querySelector(".kill-button").style.display = unit.preventRemoval ? "none" : "block";
-		}
-		showKillButton();
+		unitEl.querySelector(".kill-button").style.display = unit.preventRemoval ? "none" : "block";
 		if (unit.active){
 			unitEl.classList.add("active");
 		}
@@ -190,12 +191,6 @@ function displayAllUnits(){
 			}
 			unit.display();
 			selectedUnit = unit;
-		}
-		unitEl.querySelector(".removal").onclick = e => {
-			e.stopPropagation();
-			unit.preventRemoval = !unit.preventRemoval;
-			unitEl.querySelector(".removal").innerHTML = unit.preventRemoval ? "Cannot be deleted" : "Can be deleted";
-			showKillButton();
 		}
 		unitEl.querySelector(".kill-button").onclick = e => {
 			e.stopPropagation();
@@ -242,7 +237,7 @@ function applyReward(reward){
 		displaySettings();
 		autobuyerUnits.forEach(autobuyer => autobuyer.unlock(stat));
 		if (reward == "Autobuyer Damage"){
-			document.querySelector("#tutorial6").style.display = "block";	
+			document.querySelector("#tutorial5").style.display = "block";	
 		}
 	} else if (reward.split(" ")[0] == "Challenge") {
 		let challenge = reward.split(" ")[1];
@@ -319,11 +314,6 @@ function grantXp(xp){
 function stopRun(){
 	document.querySelector("#start-button").classList.remove("running");
 	maps[currentLevel].uninstantiate();
-	let currentUnit = playerUnits.find(unit => unit.current);
-	if (currentUnit) {
-		currentUnit.current = false;
-		currentUnit.deathXp = currentUnit.getStatValue();
-	}
 	playerUnits.forEach(unit => unit.character = "");
 	currentLevel = 0;
 	clearInterval(tickInterval);

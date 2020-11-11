@@ -167,19 +167,27 @@ class Unit {
 	
 	display(forceCurrent){
 		let statTemplate = document.querySelector("#stat-template");
+		let unitElWrapper = document.querySelector(this.current || forceCurrent ? "#current-unit-wrapper" : "#other-unit-wrapper");
 		if (this.playerOwned){
-			document.querySelector(this.current || forceCurrent ? "#current-unit-wrapper .col-header" : "#other-unit-wrapper .col-header").innerHTML = "You #" + this.loopNumber;
+			unitElWrapper.querySelector(".unit-name").innerHTML = "Adventurer #" + this.loopNumber;
 		} else {
-			document.querySelector(this.current || forceCurrent ? "#current-unit-wrapper .col-header" : "#other-unit-wrapper .col-header").innerHTML = this.name;
+			unitElWrapper.querySelector(".unit-name").innerHTML = this.name;
 		}
-		document.querySelector(this.current || forceCurrent ? "#current-unit-wrapper .ai" : "#other-unit-wrapper .ai").onchange = e => {
+		unitElWrapper.querySelector(".ai").onchange = e => {
 			if (this.playerOwned){
 				this.ai = ais[e.target.value];
 			} else {
 				e.target.value = this.ai.name;
 			}
 		};
-		document.querySelector(this.current || forceCurrent ? "#current-unit-wrapper .role" : "#other-unit-wrapper .role").onchange = this.changeRole;
+		unitElWrapper.querySelector(".role").onchange = this.changeRole;
+		unitElWrapper.querySelector(".removal").innerHTML = this.preventRemoval ? "Cannot be deleted" : "Can be deleted";
+		unitElWrapper.querySelector(".removal").onclick = e => {
+			e.stopPropagation();
+			this.preventRemoval = !this.preventRemoval;
+			unitElWrapper.querySelector(".removal").innerHTML = this.preventRemoval ? "Cannot be deleted" : "Can be deleted";
+			displayAllUnits();
+		}
 		let unitEl = document.querySelector(this.current || forceCurrent ? "#current-unit" : "#other-unit");
 		while (unitEl.firstChild){
 			unitEl.removeChild(unitEl.lastChild);

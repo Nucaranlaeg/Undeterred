@@ -36,7 +36,6 @@
 				<div class="death-xp" title="How much xp this unit had when completing its delve.  The higher it is, the slower inactive xp gains slow down."></div>
 				<div class="summary-label">Free XP:</div>
 				<div class="spendable-xp"></div>
-				<div class="removal"></div>
 			</div>
 			<div id="enemy-summary-template" class="unit-summary">
 				<div class="name"></div>
@@ -70,7 +69,7 @@
 			<div class="col-header">Messages</div>
 			<div id="messages"></div>
 		</div>
-		<div class="col">
+		<div id="map-col" class="col">
 			<div id="map-title"></div>
 			<div id="map-wrapper">
 				<table id="map"></table>
@@ -87,7 +86,13 @@
 			<div id="party"></div>
 		</div>
 		<div id="current-unit-wrapper" class="unit-col col">
-			<div class="col-header">Adventurer</div>
+			<div class="col-header">
+				<span class="unit-name">Adventurer</span>
+				<button class="unit-option-button" onclick="document.querySelector('#current-unit-options').style.display = document.querySelector('#current-unit-options').style.display == 'block' ? 'none' : 'block'">☼</button>
+			</div>
+			<div id="current-unit-options" class="unit-options">
+				<button class="option-button removal"></button>
+			</div>
 			<div class="char-info">
 				XP:<div class="xp-amount"></div><br>
 				<span class="cap-breaker"><div class="cap-breaker-desc description">Use these to increase the cap on some stats</div>Cap Breakers:</span><div class="cap-breakers"></div><br>
@@ -105,7 +110,13 @@
 			<div id="current-conditions"></div>
 		</div>
 		<div id="other-unit-wrapper" class="unit-col col">
-			<div class="col-header">Someone Else</div>
+			<div class="col-header">
+				<span class="unit-name">Someone Else</span>
+				<button class="unit-option-button" onclick="document.querySelector('#other-unit-options').style.display = document.querySelector('#other-unit-options').style.display == 'block' ? 'none' : 'block'">☼</button>
+			</div>
+			<div id="other-unit-options" class="unit-options">
+				<button class="option-button removal"></button>
+			</div>
 			<div class="char-info">
 				XP:<button id="offline-xp-button" class="increment-button">+<div class="offline-xp-button-desc description"></div></button><div class="xp-amount"></div><br>
 				<span class="cap-breaker"><div class="cap-breaker-desc description">Use these to increase the cap on some stats</div>Cap Breakers:</span><div class="cap-breakers"></div><br>
@@ -166,6 +177,7 @@
 			</div>
 			<div class="tutorial-dialogue" style="top: 150px; left: 50px; width: 300px;">
 				An adventurer that is green is in your party, while one that is gray is not.  Click once to select an adventurer, then again to toggle whether it's in your party.
+				The little x in the top right will delete an adventurer.
 				<div class="unit-summary" style="width: 200px; background-color: #00800033;">
 					<div class="name">Adventurer #57<span class="loop-count"></span></div>
 					<div class="kill-button">x</div>
@@ -175,28 +187,10 @@
 					<div class="death-xp" title="How much xp this unit had when completing its delve.  The higher it is, the slower inactive xp gains slow down."></div>
 					<div class="summary-label">Free XP:</div>
 					<div class="spendable-xp">0</div>
-					<div class="removal">Can be deleted.</div>
 				</div>
 			</div>
 		</div>
 		<div id="tutorial3" class="tutorial" onclick="(this.style.display = 'none') && (document.querySelector('#tutorial4').style.display = 'block')">
-			<div class="tutorial-dialogue" style="top: 50px; left: 50px; width: 300px;">
-				The text "Can be deleted" can also be clicked on.  This toggles protecting adventurers from deletion, whether by an accidental click or the automated management tools you'll unlock later.<br>
-				The little x in the top right will delete an advneturer.
-				<div class="unit-summary" style="width: 200px; background-color: #00800033;">
-					<div class="name">Adventurer #57<span class="loop-count"></span></div>
-					<div class="kill-button">x</div>
-					<div class="character">♥</div>
-					<div class="summary-label">Total XP:</div>
-					<div class="total-xp">75</div>
-					<div class="death-xp" title="How much xp this unit had when completing its delve.  The higher it is, the slower inactive xp gains slow down."></div>
-					<div class="summary-label">Free XP:</div>
-					<div class="spendable-xp">0</div>
-					<div class="removal" style="border: 2px solid red">Can be deleted.</div>
-				</div>
-			</div>
-		</div>
-		<div id="tutorial4" class="tutorial" onclick="(this.style.display = 'none') && (document.querySelector('#tutorial5').style.display = 'block')">
 			<div class="tutorial-dialogue" style="top: 50px; left: 50px; width: 300px;">
 				Once an adventurer is selected, you'll see their stats.<br>
 				<div class="unit-col col">
@@ -217,7 +211,7 @@
 				You'll unlock more as you delve deeper.
 			</div>
 		</div>
-		<div id="tutorial5" class="tutorial" onclick="(this.style.display = 'none')">
+		<div id="tutorial4" class="tutorial" onclick="(this.style.display = 'none')">
 			<div class="tutorial-dialogue" style="top: 50px; left: 50px; width: 200px;">
 				You can also click on enemies to see their stats.
 			</div>
@@ -225,7 +219,7 @@
 				Now, click the "Enter the dungeon!" button to begin!
 			</div>
 		</div>
-		<div id="tutorial6" class="tutorial" onclick="(this.style.display = 'none')">
+		<div id="tutorial5" class="tutorial" onclick="(this.style.display = 'none')">
 			<div class="tutorial-dialogue" style="top: 50px; left: 50px; width: 300px;">
 				You've unlocked the autobuyer!  If you click the "autobuyer" button on the left, you can toggle whether on not it's active as well as adjust what stats you're automatically buying.
 			</div>
