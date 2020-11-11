@@ -513,6 +513,23 @@ td.highlight-0 {
 	display: none;
 }
 
+.tutorial {
+	display: none;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background-color: #00000033;
+}
+
+.tutorial-dialogue {
+	border: 2px solid #cccccc;
+	background-color: #777777;
+	padding: 10px;
+	position: absolute;
+}
+
 /* For setting health bars above units */
 
 [data-health='1%']::before { width: 1%; }

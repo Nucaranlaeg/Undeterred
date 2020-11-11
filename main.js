@@ -26,7 +26,7 @@ let currentXpPerSecEl = document.querySelector("#current-xp-per-sec");
 let runStart = null;
 let runXp = 0;
 let lagTime = 0;
-let version = "1.0.2";
+let version = "1.1.0";
 
 function calculateBaseStatValue(){
 	base_stat_value += (new Unit(true, "Adventurer", baseStats)).getSpentStatValue();
@@ -218,6 +218,9 @@ function applyReward(reward){
 	} else if (lockedSettings[reward]) {
 		// Check if reward is a setting.
 		lockedSettings[reward] = false;
+		if (reward == "autoUnselect"){
+			lockedSettings["autoDiscard"] = false;
+		}
 		displayMessage(`You have unlocked the ${reward} setting!`);
 		displaySettings();
 	} else if (reward == "FasterTicks") {
@@ -238,6 +241,9 @@ function applyReward(reward){
 		lockedSettings["autobuyer"] = false;
 		displaySettings();
 		autobuyerUnits.forEach(autobuyer => autobuyer.unlock(stat));
+		if (reward == "Autobuyer Damage"){
+			document.querySelector("#tutorial6").style.display = "block";	
+		}
 	} else if (reward.split(" ")[0] == "Challenge") {
 		let challenge = reward.split(" ")[1];
 		displayMessage(`You have unlocked the ${challenge} challenge!`);

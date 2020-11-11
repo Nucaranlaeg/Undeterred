@@ -75,7 +75,7 @@ function save(){
 
 function load(){
 	if (localStorage.save === undefined){
-		displayMessage(`Use the "Enter the Dungeon" button to start the game.  If you're confused, try the "Help" button or the Discord.`)
+		document.querySelector("#tutorial1").style.display = "block";
 		return;
 	}
 	clearInterval(tickInterval);
@@ -149,8 +149,14 @@ function load(){
 	}
 	
 	// Do version-specific stuff
-	if (!saveGame.version){
+	if (!saveGame.version || saveGame.version < "1.0.3"){
 		bestLevel = 0;
+		for (let i = 0; i < maps.length && i < saveGame.maps.length; i++){
+			if (maps[i].reward != "FasterTicks"){
+				maps[i].conquered = false;
+			}
+		}
+		document.querySelector("#tutorial1").style.display = "block";
 	}
 	
 	calculateBaseStatValue();

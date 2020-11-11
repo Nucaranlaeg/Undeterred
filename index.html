@@ -2,7 +2,7 @@
 <meta charset="UTF-8" http-equiv="Content-Type">
 <html>
 	<head>
-		<title>Undeterred v1.0.3</title>
+		<title>Undeterred v1.1.0</title>
 		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
 	<body>
@@ -155,6 +155,84 @@
 				</div>
 			</div>
 		</div>
+		<div id="tutorial1" class="tutorial" onclick="(this.style.display = 'none') && (document.querySelector('#tutorial2').style.display = 'block')">
+			<div class="tutorial-dialogue" style="top: 50px; left: 50px;">
+				Welcome to Undeterred!  Click anywhere to continue.
+			</div>
+		</div>
+		<div id="tutorial2" class="tutorial" onclick="(this.style.display = 'none') && (document.querySelector('#tutorial3').style.display = 'block')">
+			<div class="tutorial-dialogue" style="top: 50px; left: 50px; width: 300px;">
+				In Undeterred, your adventurers explore a cavern.  Each time you enter the cavern, you can bring three of your experienced adventurers and one new one.
+			</div>
+			<div class="tutorial-dialogue" style="top: 150px; left: 50px; width: 300px;">
+				An adventurer that is green is in your party, while one that is gray is not.  Click once to select an adventurer, then again to toggle whether it's in your party.
+				<div class="unit-summary" style="width: 200px; background-color: #00800033;">
+					<div class="name">Adventurer #57<span class="loop-count"></span></div>
+					<div class="kill-button">x</div>
+					<div class="character">♥</div>
+					<div class="summary-label">Total XP:</div>
+					<div class="total-xp">75</div>
+					<div class="death-xp" title="How much xp this unit had when completing its delve.  The higher it is, the slower inactive xp gains slow down."></div>
+					<div class="summary-label">Free XP:</div>
+					<div class="spendable-xp">0</div>
+					<div class="removal">Can be deleted.</div>
+				</div>
+			</div>
+		</div>
+		<div id="tutorial3" class="tutorial" onclick="(this.style.display = 'none') && (document.querySelector('#tutorial4').style.display = 'block')">
+			<div class="tutorial-dialogue" style="top: 50px; left: 50px; width: 300px;">
+				The text "Can be deleted" can also be clicked on.  This toggles protecting adventurers from deletion, whether by an accidental click or the automated management tools you'll unlock later.<br>
+				The little x in the top right will delete an advneturer.
+				<div class="unit-summary" style="width: 200px; background-color: #00800033;">
+					<div class="name">Adventurer #57<span class="loop-count"></span></div>
+					<div class="kill-button">x</div>
+					<div class="character">♥</div>
+					<div class="summary-label">Total XP:</div>
+					<div class="total-xp">75</div>
+					<div class="death-xp" title="How much xp this unit had when completing its delve.  The higher it is, the slower inactive xp gains slow down."></div>
+					<div class="summary-label">Free XP:</div>
+					<div class="spendable-xp">0</div>
+					<div class="removal" style="border: 2px solid red">Can be deleted.</div>
+				</div>
+			</div>
+		</div>
+		<div id="tutorial4" class="tutorial" onclick="(this.style.display = 'none') && (document.querySelector('#tutorial5').style.display = 'block')">
+			<div class="tutorial-dialogue" style="top: 50px; left: 50px; width: 300px;">
+				Once an adventurer is selected, you'll see their stats.<br>
+				<div class="unit-col col">
+					<div class="stat">
+						<div class="name">Health</div>
+						<div class="value">100</div>
+						<div class="description">Increases the amount of damage you can take before you die.</div>
+					</div>
+					<div class="stat">
+						<div class="name">Damage</div>
+						<div class="value">10</div>
+						<div class="description">Increases the damage you do by 1 per point.</div>
+					</div>
+				</div><br>
+				You can mouse over them to see a description of what they do, and click on them to spend your xp to increase them.
+			</div>
+			<div class="tutorial-dialogue" style="top: 250px; left: 50px; width: 200px;">
+				You'll unlock more as you delve deeper.
+			</div>
+		</div>
+		<div id="tutorial5" class="tutorial" onclick="(this.style.display = 'none')">
+			<div class="tutorial-dialogue" style="top: 50px; left: 50px; width: 200px;">
+				You can also click on enemies to see their stats.
+			</div>
+			<div class="tutorial-dialogue" style="top: 113px; left: 50px; width: 200px;">
+				Now, click the "Enter the dungeon!" button to begin!
+			</div>
+		</div>
+		<div id="tutorial6" class="tutorial" onclick="(this.style.display = 'none')">
+			<div class="tutorial-dialogue" style="top: 50px; left: 50px; width: 300px;">
+				You've unlocked the autobuyer!  If you click the "autobuyer" button on the left, you can toggle whether on not it's active as well as adjust what stats you're automatically buying.
+			</div>
+			<div class="tutorial-dialogue" style="top: 149px; left: 50px; width: 200px;">
+				You'll unlock more autobuyer options as you delve deeper.
+			</div>
+		</div>
 		<script src="settings.js"></script>
 		<script src="ai.js"></script>
 		<script src="stat.js"></script>
@@ -167,6 +245,7 @@
 		<script src="messages.js"></script>
 		<script src="challenges.js"></script>
 		<script src="main.js"></script>
+		<script src="tutorial.js"></script>
 		<script src="save.js"></script>
 	</body>
 </html>

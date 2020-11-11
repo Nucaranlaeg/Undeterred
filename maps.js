@@ -322,7 +322,7 @@ maps.push(new Map("Level 3",
 					 "##aa#######",
 					 "###########"],
 					4,
-					"Autobuyer Damage",
+					"autoUnselect",
 					"The tight confines of this anthill do not faze you.  You refuse to yield to fear."));
 
 maps.push(new Map("Level 4",
@@ -346,7 +346,7 @@ maps.push(new Map("Level 4",
 					 "##a########a..#",
 					 "###############"],
 					4,
-					"autoUnselect",
+					"Autobuyer Damage",
 					"The maze-like anthill goes deep into the ground.  You feel like you've been lost a dozen times or more by now."));
 
 maps.push(new Map("Level 5",
@@ -416,7 +416,7 @@ maps.push(new Map("Level 7",
 					 "##aaaa.......r###",
 					 "#################"],
 					4,
-					"autoDiscard",
+					"multiXp",
 					"The ants are getting larger and fiercer.  But you are getting stronger as well, and feel confident you can complete this challenge."));
 
 maps.push(new Map("Level 8",
@@ -505,7 +505,7 @@ maps.push(new Map("Level 11",
 					 "###gg..gg##",
 					 "###########"],
 					4,
-					"multiXp",
+					"Autobuyer Protection",
 					"Goblins.  Nasty little creatures that put up a fierce resistance.  Good thing your swords are sharper than theirs."));
 
 maps.push(new Map("Level 12",
@@ -543,7 +543,7 @@ maps.push(new Map("Level 13",
 					 "#####gg....gg####",
 					 "#################"],
 					4,
-					"Autobuyer Protection",
+					"Autobuyer CriticalHit",
 					"Not the most inventive creatures, goblins.  You're starting to notice a pattern in their caves."));
 
 maps.push(new Map("Level 14",
@@ -675,7 +675,7 @@ maps.push(new Map("Level 19",
 					 "#######.ww.######",
 					 "#################"],
 					4,
-					"Autobuyer CriticalHit",
+					"Autobuyer Haste",
 					"It's a good thing you're so dedicated to seeing this through, or you might have given up by now."));
 
 maps.push(new Map("Level 20",
