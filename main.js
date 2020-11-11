@@ -26,7 +26,7 @@ let currentXpPerSecEl = document.querySelector("#current-xp-per-sec");
 let runStart = null;
 let runXp = 0;
 let lagTime = 0;
-let version = "1.1.0";
+let version = "1.1.1";
 
 function calculateBaseStatValue(){
 	base_stat_value += (new Unit(true, "Adventurer", baseStats)).getSpentStatValue();

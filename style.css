@@ -291,7 +291,7 @@ td.not-visible {
 
 .unit-summary {
 	width: calc(100% - 10px);
-	height: 70px;
+	height: 55px;
 	cursor: pointer;
 	position: relative;
 	padding: 5px;
