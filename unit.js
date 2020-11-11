@@ -37,7 +37,7 @@ class Unit {
 			Haste: new Haste(0),
 		};
 		let extraLevels = 0;
-		if (activeChallenge && activeChallenge.name == "Plus Two Levels" && name != "You"){
+		if (activeChallenge && activeChallenge.name == "Plus Two Levels" && name != "Adventurer"){
 			extraLevels = 2;
 		}
 		for (const [key, value] of Object.entries(stats)){
@@ -51,7 +51,7 @@ class Unit {
 			}
 			this.stats[key].unlock();
 		}
-		if (activeChallenge && activeChallenge.name == "Accuracy" && name != "You"){
+		if (activeChallenge && activeChallenge.name == "Accuracy" && name != "Adventurer"){
 			this.stats.ToHit.value *= 100;
 		}
 		// Number of times this unit's caps can be increased.
@@ -224,7 +224,7 @@ class Unit {
 		unitElWrapper.querySelector(".xp-amount").innerHTML = Math.floor(this.xp);
 		unitElWrapper.querySelector(".cap-breakers").innerHTML = this.capBreakers;
 		unitElWrapper.querySelector(".ai").value = this.ai.name;
-		unitElWrapper.querySelector(".role-wrapper").style.display = (this.name == "You" || this.isAutobuyer) && unlockedRoles ? "block" : "none";
+		unitElWrapper.querySelector(".role-wrapper").style.display = (this.name == "Adventurer" || this.isAutobuyer) && unlockedRoles ? "block" : "none";
 		if (this.current || forceCurrent){
 			unitElWrapper.querySelector(".ai").removeAttribute("disabled");
 		} else {

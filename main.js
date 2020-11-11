@@ -26,9 +26,10 @@ let currentXpPerSecEl = document.querySelector("#current-xp-per-sec");
 let runStart = null;
 let runXp = 0;
 let lagTime = 0;
+let version = "1.0.2";
 
 function calculateBaseStatValue(){
-	base_stat_value += (new Unit(true, "You", baseStats)).getSpentStatValue();
+	base_stat_value += (new Unit(true, "Adventurer", baseStats)).getSpentStatValue();
 }
 calculateBaseStatValue();
 
@@ -76,7 +77,7 @@ function beginRun(){
 			let unitMinXP = playerUnits.findIndex(unit => !unit.active && unit.deathXp == minXP && !unit.preventRemoval);
 			playerUnits.splice(unitMinXP, 1);
 		} else {
-			displayMessage("You can only have 10 total units - forget one by clicking the x before you can enter the caverns again.");
+			displayMessage("You can only have 10 total units - delete one by clicking the x before you can enter the caverns again.");
 			return;
 		}
 	}
@@ -84,7 +85,7 @@ function beginRun(){
 	runXp = 0;
 	document.querySelector("#start-button").classList.add("running");
 	loopCount++;
-	let newPlayerUnit = new Unit(true, "You", baseStats, autobuyerUnits[lastUnitRole].ai.name, true, loopCount, lastUnitRole);
+	let newPlayerUnit = new Unit(true, "Adventurer", baseStats, autobuyerUnits[lastUnitRole].ai.name, true, loopCount, lastUnitRole);
 	newPlayerUnit.character = playerSymbols[0];
 	playerUnits.push(newPlayerUnit);
 	partyUnits = playerUnits.filter(unit => unit.active);
@@ -167,7 +168,7 @@ function displayAllUnits(){
 			unitEl.querySelector(".spendable-xp").innerHTML = Math.floor(unit.xp);
 		}
 		unitEl.querySelector(".loop-count").innerHTML = unit.loopNumber;
-		unitEl.querySelector(".removal").innerHTML = unit.preventRemoval ? "Cannot be forgotten" : "Can be forgotten";
+		unitEl.querySelector(".removal").innerHTML = unit.preventRemoval ? "Cannot be deleted" : "Can be deleted";
 		let showKillButton = () => {
 			unitEl.querySelector(".kill-button").style.display = unit.preventRemoval ? "none" : "block";
 		}
@@ -193,7 +194,7 @@ function displayAllUnits(){
 		unitEl.querySelector(".removal").onclick = e => {
 			e.stopPropagation();
 			unit.preventRemoval = !unit.preventRemoval;
-			unitEl.querySelector(".removal").innerHTML = unit.preventRemoval ? "Cannot be forgotten" : "Can be forgotten";
+			unitEl.querySelector(".removal").innerHTML = unit.preventRemoval ? "Cannot be deleted" : "Can be deleted";
 			showKillButton();
 		}
 		unitEl.querySelector(".kill-button").onclick = e => {

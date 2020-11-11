@@ -53,7 +53,7 @@ class AutobuyerUnit extends Unit {
 		document.querySelector("#other-unit-wrapper .col-header").innerHTML = `${this.name} (${settings.autobuyer ? "Active" : "Inactive"})`;
 		maps[currentLevel].noHighlight(0);
 		unitElWrapper.querySelector("#offline-xp-button").style.display = "none";
-		unitElWrapper.querySelector(".role-wrapper").style.display = (this.name == "You" || this.isAutobuyer) && unlockedRoles ? "block" : "none";
+		unitElWrapper.querySelector(".role-wrapper").style.display = (this.name == "Adventurer" || this.isAutobuyer) && unlockedRoles ? "block" : "none";
 	}
 
 	unlock(stat){

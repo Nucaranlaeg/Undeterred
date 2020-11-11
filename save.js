@@ -4,6 +4,7 @@ function trySave(){
 
 function save(){
 	let saveGame = {
+		version,
 		settings,
 		lockedSettings,
 		loopCount,
@@ -97,7 +98,7 @@ function load(){
 	document.querySelector("#xp-per-sec").innerHTML = formatNumber(offlineData.xpPerSec);
 	if (!maps[currentLevel]) currentLevel = 0;
 	playerUnits = saveGame.units.map(unitData => {
-		let unit = new Unit(true, "You", {}, unitData.ai, false, unitData.loopNumber);
+		let unit = new Unit(true, "Adventurer", {}, unitData.ai, false, unitData.loopNumber);
 		unitData.stats.forEach(stat => {
 			unit.stats[stat.name].cap = stat.cap || Infinity;
 			unit.stats[stat.name].value = stat.value;
@@ -145,6 +146,11 @@ function load(){
 	for (let i = 0; i < maps.length && i < saveGame.maps.length; i++){
 		maps[i].deaths = saveGame.maps[i].deaths;
 		maps[i].conquered = saveGame.maps[i].conquered;
+	}
+	
+	// Do version-specific stuff
+	if (!saveGame.version){
+		bestLevel = 0;
 	}
 	
 	calculateBaseStatValue();

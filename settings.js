@@ -22,9 +22,9 @@ let settingMessages = {
 		"Automatically start run",
 	],
 	autoDiscard: [
-		"Do not automatically forget units",
-		"Automatically forget the unit with the least experience",
-		"Automatically forget the unit with the least experience potential",
+		"Do not automatically delete units",
+		"Automatically delete the unit with the least experience",
+		"Automatically delete the unit with the least experience potential",
 	],
 	multiXp: [
 		"Assign 1 experience point at once",

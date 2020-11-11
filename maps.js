@@ -346,7 +346,7 @@ maps.push(new Map("Level 4",
 					 "##a########a..#",
 					 "###############"],
 					4,
-					"Autobuyer Health",
+					"autoUnselect",
 					"The maze-like anthill goes deep into the ground.  You feel like you've been lost a dozen times or more by now."));
 
 maps.push(new Map("Level 5",
@@ -392,7 +392,7 @@ maps.push(new Map("Level 6",
 					 "##a.......r...###",
 					 "#################"],
 					5,
-					"autoUnselect",
+					"Autobuyer Health",
 					"With each new level, the creatures seem to be getting stronger.  Surely there are great treasures to be discovered below!  You emerge into a larger cavern."));
 
 maps.push(new Map("Level 7",
