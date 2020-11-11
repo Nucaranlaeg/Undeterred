@@ -85,7 +85,7 @@ class Map {
 	uninstantiate(){
 		this.instantiated = false;
 		this.map = null;
-		this.enemies.forEach(e => e.removeSummary());
+		oldEnemies = this.enemies;
 		this.enemies = [];
 		this.nodesWithCreatures = [];
 		this.mapNodes = [];

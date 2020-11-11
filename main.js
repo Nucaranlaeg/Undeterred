@@ -26,7 +26,9 @@ let currentXpPerSecEl = document.querySelector("#current-xp-per-sec");
 let runStart = null;
 let runXp = 0;
 let lagTime = 0;
-let version = "1.1.1";
+let version = "1.1.2";
+// For keeping enemy listings available after run completion
+let oldEnemies = [];
 
 function calculateBaseStatValue(){
 	base_stat_value += (new Unit(true, "Adventurer", baseStats)).getSpentStatValue();
@@ -106,6 +108,8 @@ function beginRun(){
 }
 
 function loadNextMap(){
+	oldEnemies.forEach(e => e.removeSummary());
+	oldEnemies = [];
 	let partyUnits = playerUnits.filter(unit => unit.active).reverse();
 	// On moving to the next level, all player units come back to life
 	// Unless in the NoRespawn challenge.
