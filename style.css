@@ -359,11 +359,16 @@ td.not-visible {
 }
 
 #export-button,
-#import-button {
+#import-button,
+#hard-reset-button {
 	background-color: #2e6d2e;
 	border-color: #195e19;
 	color: #eeeeee;
 	margin-top: 5px;
+}
+
+#hard-reset-button {
+	float: right;
 }
 
 #discord-button {

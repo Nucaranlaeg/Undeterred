@@ -202,4 +202,10 @@ function importGame(){
 	}
 }
 
+function hardResetGame(){
+	localStorage.hardresetbackup = localStorage.save;
+	delete(localStorage.save);
+	location.reload();
+}
+
 load();
