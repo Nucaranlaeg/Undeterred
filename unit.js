@@ -229,7 +229,7 @@ class Unit {
 			unitElWrapper.querySelector(".ai").removeAttribute("disabled");
 		} else {
 			let offlineXpButton = unitElWrapper.querySelector("#offline-xp-button");
-			if (this.offlineTimeCost() < offlineData.offlineTime){
+			if (this.offlineTimeCost() < offlineData.offlineTime && this.playerOwned){
 				offlineXpButton.style.display = "inline-block";
 				offlineXpButton.querySelector(".offline-xp-button-desc").innerHTML = `Cost for ${settings.multiXp} xp: ${formatNumber(this.offlineTimeCost() / 1000)}s`;
 				offlineXpButton.onclick = this.spendOfflineTime.bind(this);
