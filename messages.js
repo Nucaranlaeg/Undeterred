@@ -5,7 +5,7 @@ let helpMessages = {
 	toggleDeletionProtect: ["Click on 'Can be deleted' to toggle it and prevent accidental deletion of units."],
 	deathLevelDecay: ["When all your units die on a level, it gets slightly easier for the next time you challenge it.  When you beat it, it's reset to normal."],
 	capBreakerCost: ["Each time you break the cap on a stat, the cost to do it again on the same unit increases."],
-	inactiveXpSlow: ["Inactive xp gains slow much more after they've increased xp by 10%."],
+	inactiveXpSlow: ["Xp gains for units which aren't the new one slow much more after they've increased xp by 10%."],
 	autobuyerDecrease: ["Right click to decrease xp in the autobuyer."],
 	capBreakerGet: ["You get a capbreaker whenever you defeat a boss floor."],
 	gainInactiveXp: ["When a unit is in your party but not the new unit, it gains xp at a much slower rate."],
