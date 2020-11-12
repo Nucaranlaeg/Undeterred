@@ -2,7 +2,7 @@
 <meta charset="UTF-8" http-equiv="Content-Type">
 <html>
 	<head>
-		<title>Undeterred v1.1.2</title>
+		<title>Undeterred v1.1.3</title>
 		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
 	<body>
@@ -36,6 +36,7 @@
 				<div class="death-xp" title="How much xp this unit had when completing its delve.  The higher it is, the slower inactive xp gains slow down."></div>
 				<div class="summary-label">Free XP:</div>
 				<div class="spendable-xp"></div>
+				<div class="party-assign"></div>
 			</div>
 			<div id="enemy-summary-template" class="unit-summary">
 				<div class="name"></div>
@@ -75,6 +76,7 @@
 				<table id="map"></table>
 			</div>
 			<div id="map-reward"></div>
+			<div id="party"></div>
 			<div id="offline-stats">
 				<div class="offline-data">Best XP/sec: <span id="xp-per-sec">0</span></div>
 				<div class="offline-data">Current XP/sec: <span id="current-xp-per-sec">0</span></div>
@@ -83,38 +85,14 @@
 		</div>
 		<div id="party-wrapper" class="col party-col">
 			<div class="col-header">Party</div>
-			<div id="party"></div>
+			<div id="other-adventurers"></div>
 		</div>
-		<div id="current-unit-wrapper" class="unit-col col">
+		<div id="unit-wrapper" class="unit-col col">
 			<div class="col-header">
 				<span class="unit-name">Adventurer</span>
-				<button class="unit-option-button" onclick="document.querySelector('#current-unit-options').style.display = document.querySelector('#current-unit-options').style.display == 'block' ? 'none' : 'block'">☼</button>
+				<button class="unit-option-button" onclick="document.querySelector('#unit-options').style.display = document.querySelector('#unit-options').style.display == 'block' ? 'none' : 'block'">☼</button>
 			</div>
-			<div id="current-unit-options" class="unit-options">
-				<button class="option-button removal"></button>
-			</div>
-			<div class="char-info">
-				XP:<div class="xp-amount"></div><br>
-				<span class="cap-breaker"><div class="cap-breaker-desc description">Use these to increase the cap on some stats</div>Cap Breakers:</span><div class="cap-breakers"></div><br>
-				AI:<select class="ai"></select><br>
-				<span class="role-wrapper">
-					Role:<select class="role">
-						<option value="0">Primary</option>
-						<option value="1">Secondary</option>
-						<option value="2">Tertiary</option>
-						<option value="3">Quaternary</option>
-					</select>
-				</span>
-			</div>
-			<div id="current-unit" class="unit-col col"></div>
-			<div id="current-conditions"></div>
-		</div>
-		<div id="other-unit-wrapper" class="unit-col col">
-			<div class="col-header">
-				<span class="unit-name">Someone Else</span>
-				<button class="unit-option-button" onclick="document.querySelector('#other-unit-options').style.display = document.querySelector('#other-unit-options').style.display == 'block' ? 'none' : 'block'">☼</button>
-			</div>
-			<div id="other-unit-options" class="unit-options">
+			<div id="unit-options" class="unit-options">
 				<button class="option-button removal"></button>
 			</div>
 			<div class="char-info">
@@ -130,8 +108,8 @@
 					</select>
 				</span>
 			</div>
-			<div id="other-unit" class="unit-col col"></div>
-			<div id="other-conditions"></div>
+			<div id="unit" class="unit-col col"></div>
+			<div id="conditions"></div>
 		</div>
 		<div id="enemies-wrapper" class="col party-col">
 			<div class="col-header">Enemy Creatures</div>

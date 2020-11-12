@@ -26,7 +26,7 @@ let currentXpPerSecEl = document.querySelector("#current-xp-per-sec");
 let runStart = null;
 let runXp = 0;
 let lagTime = 0;
-let version = "1.1.2";
+let version = "1.1.3";
 // For keeping enemy listings available after run completion
 let oldEnemies = [];
 
@@ -128,8 +128,7 @@ function loadNextMap(){
 function resetHealth(partyUnits){
 	partyUnits.forEach(unit => unit.dead = false);
 	partyUnits.forEach(unit => unit.refillHealth());
-	document.querySelector("#current-conditions").innerHTML = "";
-	document.querySelector("#other-conditions").innerHTML = "";
+	document.querySelector("#conditions").innerHTML = "";
 }
 
 function displayCurrentUnit(){
@@ -160,10 +159,15 @@ function displayEnemyUnits(){
 }
 
 function displayAllUnits(){
+	let partyFull = playerUnits.reduce((a, unit) => unit.active + a, 0) == 4;
 	let partyDiv = document.querySelector("#party");
+	let otherAdventurersDiv = document.querySelector("#other-adventurers");
 	let unitSummaryTemplate = document.querySelector("#unit-summary-template");
 	while (partyDiv.firstChild){
 		partyDiv.removeChild(partyDiv.lastChild);
+	}
+	while (otherAdventurersDiv.firstChild){
+		otherAdventurersDiv.removeChild(otherAdventurersDiv.lastChild);
 	}
 	playerUnits.forEach(unit => {
 		let unitEl = unitSummaryTemplate.cloneNode(true);
@@ -178,8 +182,23 @@ function displayAllUnits(){
 		}
 		unitEl.querySelector(".loop-count").innerHTML = unit.loopNumber;
 		unitEl.querySelector(".kill-button").style.display = unit.preventRemoval ? "none" : "block";
+		let toggleInParty = e => {
+			e.stopPropagation();
+			unit.active = !unit.active;
+			displayAllUnits();
+		};
+		let partyAssignEl = unitEl.querySelector(".party-assign");
 		if (unit.active){
 			unitEl.classList.add("active");
+			partyAssignEl.innerHTML = "Remove from party";
+			partyAssignEl.onclick = toggleInParty;
+			} else {
+			partyAssignEl.innerHTML = "Add to party";
+			if (partyFull){
+				partyAssignEl.classList.add("disabled");
+			} else {
+				partyAssignEl.onclick = toggleInParty;
+			}
 		}
 		if (unit.current){
 			unitEl.classList.add("current");
@@ -205,7 +224,11 @@ function displayAllUnits(){
 				displayAllUnits();
 			}
 		}
-		partyDiv.append(unitEl);
+		if (unit.active){
+			partyDiv.append(unitEl);
+		} else {
+			otherAdventurersDiv.append(unitEl);
+		}
 	});
 }
 

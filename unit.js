@@ -110,7 +110,7 @@ class Unit {
 		}
 		this.dead = true;
 		if (this == selectedUnit){
-			maps[currentLevel].noHighlight(0);
+			maps[currentLevel].noHighlight();
 		}
 		this.removeSummary();
 	}
@@ -130,33 +130,34 @@ class Unit {
 		return Object.values(this.stats).reduce((a, stat) => a + stat.getXpAmount(), 0) - base_stat_value;
 	}
 
-	breakCap(stat, isCurrent, event){
+	breakCap(stat, event){
 		if (this.capBreakers > this.stats[stat].breaks){
 			if (this.stats[stat].increaseCap()){
 				this.capBreakers -= this.stats[stat].breaks;
 			}
 		}
 		if (event) event.stopPropagation();
-		this.display(isCurrent);
+		this.display();
 	}
 
-	unBreakCap(stat, isCurrent, event){
+	unBreakCap(stat, event){
 		if (this.stats[stat].decreaseCap()){
 			this.capBreakers += this.stats[stat].breaks + 1;
-			this.display(isCurrent);
+			this.display();
 			return true;
 		}
+		if (event) event.stopPropagation();
 		return false;
 	}
 
-	spendXp(stat, isCurrent, event, amount){
+	spendXp(stat, event, amount){
 		if (!this.playerOwned) return;
 		if (this.xp >= 1){
 			let xpToSpend = Math.min(Math.floor(this.xp), amount || settings.multiXp);
 			this.xp -= xpToSpend - this.stats[stat].gainXp(xpToSpend);
 		}
-		if (isCurrent || event){
-			this.display(isCurrent);
+		if (event){
+			this.display();
 		}
 		this.updateXP();
 	}
@@ -165,9 +166,9 @@ class Unit {
 		this.role = event.target.value;
 	}
 	
-	display(forceCurrent){
+	display(){
 		let statTemplate = document.querySelector("#stat-template");
-		let unitElWrapper = document.querySelector(this.current || forceCurrent ? "#current-unit-wrapper" : "#other-unit-wrapper");
+		let unitElWrapper = document.querySelector("#unit-wrapper");
 		if (this.playerOwned){
 			unitElWrapper.querySelector(".unit-name").innerHTML = "Adventurer #" + this.loopNumber;
 		} else {
@@ -188,7 +189,7 @@ class Unit {
 			unitElWrapper.querySelector(".removal").innerHTML = this.preventRemoval ? "Cannot be deleted" : "Can be deleted";
 			displayAllUnits();
 		}
-		let unitEl = document.querySelector(this.current || forceCurrent ? "#current-unit" : "#other-unit");
+		let unitEl = document.querySelector("#unit");
 		while (unitEl.firstChild){
 			unitEl.removeChild(unitEl.lastChild);
 		}
@@ -209,7 +210,7 @@ class Unit {
 						e.stopPropagation();
 					};
 				}
-				statEl.onclick = this.spendXp.bind(this, stat.getQualifiedName(), this.current || forceCurrent);
+				statEl.onclick = this.spendXp.bind(this, stat.getQualifiedName());
 				if (stat.name == "Health"){
 					let current = document.createElement("div");
 					statEl.append(current);
@@ -224,37 +225,32 @@ class Unit {
 			}
 			if (activeChallenge && activeChallenge.isIllegal(stat)) statEl.classList.add("disabled");
 		});
-		this.displayStatus(forceCurrent);
+		this.displayStatus();
 	}
 	
-	displayStatus(forceCurrent){
-		let unitElWrapper = document.querySelector(this.current || forceCurrent ? "#current-unit-wrapper" : "#other-unit-wrapper");
+	displayStatus(){
+		let unitElWrapper = document.querySelector("#unit-wrapper");
 		unitElWrapper.querySelector(".xp-amount").innerHTML = Math.floor(this.xp);
 		unitElWrapper.querySelector(".cap-breakers").innerHTML = this.capBreakers;
 		unitElWrapper.querySelector(".ai").value = this.ai.name;
 		unitElWrapper.querySelector(".role-wrapper").style.display = (this.name == "Adventurer" || this.isAutobuyer) && unlockedRoles ? "block" : "none";
-		if (this.current || forceCurrent){
-			unitElWrapper.querySelector(".ai").removeAttribute("disabled");
+		let offlineXpButton = unitElWrapper.querySelector("#offline-xp-button");
+		if (this.offlineTimeCost() < offlineData.offlineTime && this.playerOwned){
+			offlineXpButton.style.display = "inline-block";
+			offlineXpButton.querySelector(".offline-xp-button-desc").innerHTML = `Cost for ${settings.multiXp} xp: ${formatNumber(this.offlineTimeCost() / 1000)}s`;
+			offlineXpButton.onclick = this.spendOfflineTime.bind(this);
 		} else {
-			let offlineXpButton = unitElWrapper.querySelector("#offline-xp-button");
-			if (this.offlineTimeCost() < offlineData.offlineTime && this.playerOwned){
-				offlineXpButton.style.display = "inline-block";
-				offlineXpButton.querySelector(".offline-xp-button-desc").innerHTML = `Cost for ${settings.multiXp} xp: ${formatNumber(this.offlineTimeCost() / 1000)}s`;
-				offlineXpButton.onclick = this.spendOfflineTime.bind(this);
-			} else {
-				offlineXpButton.style.display = "none";
-			}
-			// unitElWrapper.querySelector(".ai").disabled = true;
+			offlineXpButton.style.display = "none";
 		}
 		if (!this.dead){
-			document.querySelector(`#${this.current || forceCurrent ? "current" : "other"}-unit .Health .current`).style.width = `${100 * this.stats.Health.current / this.stats.Health.value}%`;
-			maps[currentLevel].highlight(this.current || forceCurrent ? 1 : 0, this.x, this.y);
+			document.querySelector("#unit .Health .current").style.width = `${100 * this.stats.Health.current / this.stats.Health.value}%`;
+			maps[currentLevel].highlight(this.x, this.y);
 		} else {
-			document.querySelector(`#${this.current || forceCurrent ? "current" : "other"}-unit .Health .current`).style.width = `0%`;
-			maps[currentLevel].noHighlight(this.current || forceCurrent ? 1 : 0);
+			document.querySelector("#unit .Health .current").style.width = `0%`;
+			maps[currentLevel].noHighlight();
 		}
 		let conditionTemplate = document.querySelector("#condition-template");
-		let conditionWrapper = document.querySelector(this.current || forceCurrent ? "#current-conditions" : "#other-conditions");
+		let conditionWrapper = document.querySelector("#conditions");
 		Object.values(this.conditions).forEach(condition => {
 			if (!condition.isApplied) return;
 			let conditionEl = conditionWrapper.querySelector(`.${condition.getQualifiedName()}`);
@@ -299,7 +295,7 @@ class Unit {
 		while (this.xp >= 1 && autobuyStats.length){
 			if (autobuyerUnits[this.role].stats[autobuyStats[index]].value - 0.001 > this.stats[autobuyStats[index]].value){
 				let startingValue = this.stats[autobuyStats[index]].value;
-				this.spendXp(autobuyStats[index], this.current, null, 1);
+				this.spendXp(autobuyStats[index], null, 1);
 				// If we're at the cap or something else prevents us from buying...
 				if (startingValue == this.stats[autobuyStats[index]].value){
 					autobuyStats.splice(index, 1);

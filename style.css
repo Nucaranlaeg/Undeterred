@@ -18,7 +18,7 @@ body * {
 }
 
 #map-col {
-	min-width: 382px;
+	width: 382px;
 	text-align: center;
 }
 
@@ -260,7 +260,7 @@ td.health-bar::before {
 	content: " ";
 }
 
-td.highlight-0.health-bar::before {
+td.highlight.health-bar::before {
 	background-color: #ff0000;
 }
 
@@ -291,19 +291,33 @@ td.not-visible {
 
 .unit-summary {
 	width: calc(100% - 10px);
-	height: 55px;
+	height: 72px;
 	cursor: pointer;
 	position: relative;
 	padding: 5px;
 	user-select: none;
 }
 
-.unit-summary.active {
-	background-color: #00800033;
+#enemy-creatures .unit-summary {
+	height: 55px;
 }
 
-.unit-summary.current {
-	background-color: #008000aa;
+#party {
+	text-align: initial;
+}
+
+#party .unit-summary {
+	width: calc(50% - 11px);
+	display: inline-block;
+	border-top: 2px solid #666666;
+}
+
+#party .unit-summary:nth-of-type(2n) {
+	border-left: 2px solid #666666;
+}
+
+.unit-summary.active {
+	background-color: #00800033;
 }
 
 .unit-summary:not(:first-of-type) {
@@ -344,6 +358,20 @@ td.not-visible {
 	padding-right: 5px;
 }
 
+.party-assign {
+	text-align: center;
+	border: 2px outset #555555;
+}
+
+.party-assign:not(.disabled):hover {
+	background-color: #99999933;
+}
+
+.party-assign.disabled {
+	color: #99999966;
+	cursor: not-allowed !important;
+}
+
 .summary-label {
 	display: inline-block;
 	width: calc(50% - 2px);
@@ -355,6 +383,13 @@ td.not-visible {
 
 .options-col button {
 	width: 100%;
+	cursor: pointer;
+}
+
+#start-button {
+	background-color: #44a444;
+	border-color: #228222;
+	color: #eeeeee;
 }
 
 #start-button {
@@ -366,6 +401,7 @@ td.not-visible {
 #start-button.running {
 	background: #006000;
 	border-style: inset;
+	cursor: progress;
 }
 
 #save-button {
@@ -407,7 +443,7 @@ td.not-visible {
 	margin-top: 5px;
 }
 
-td.highlight-0 {
+td.highlight {
 	background-color: #0000a0;
 }
 

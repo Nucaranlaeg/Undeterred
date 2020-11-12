@@ -18,13 +18,13 @@ class AutobuyerUnit extends Unit {
 		this.updateXP();
 	}
 
-	breakCap(stat, isCurrent, event){
+	breakCap(stat, event){
 		this.capBreakersUsed += this.stats[stat].breaks + 1;
-		super.breakCap(stat, isCurrent, event);
+		super.breakCap(stat, event);
 	}
 
-	unBreakCap(stat, isCurrent, event){
-		if (super.unBreakCap(stat, isCurrent, event)){
+	unBreakCap(stat, event){
+		if (super.unBreakCap(stat, event)){
 			this.capBreakersUsed -= this.stats[stat].breaks + 1;
 			this.displayStatus();
 		}
@@ -32,7 +32,7 @@ class AutobuyerUnit extends Unit {
 
 	display(){
 		super.display();
-		let unitEl = document.querySelector("#other-unit");
+		let unitEl = document.querySelector("#unit");
 		Object.values(this.stats).forEach(stat => {
 			if (stat.locked) return;
 			let statEl = unitEl.querySelector(`.${stat.getQualifiedName()}`);
@@ -41,17 +41,17 @@ class AutobuyerUnit extends Unit {
 				e.preventDefault();
 			};
 		});
-		document.querySelector("#other-conditions").innerHTML = "";
+		document.querySelector("#conditions").innerHTML = "";
 	}
 
 	displayStatus(){
-		let unitElWrapper = document.querySelector("#other-unit-wrapper");
+		let unitElWrapper = document.querySelector("#unit-wrapper");
 		unitElWrapper.querySelector(".xp-amount").innerHTML = this.getSpentStatValue();
 		unitElWrapper.querySelector(".cap-breakers").innerHTML = this.capBreakersUsed;
 		unitElWrapper.querySelector(".ai").value = this.ai.name;
 		unitElWrapper.querySelector(".ai").removeAttribute("disabled");
-		document.querySelector("#other-unit-wrapper .unit-name").innerHTML = `${this.name} (${settings.autobuyer ? "Active" : "Inactive"})`;
-		maps[currentLevel].noHighlight(0);
+		document.querySelector("#unit-wrapper .unit-name").innerHTML = `${this.name} (${settings.autobuyer ? "Active" : "Inactive"})`;
+		maps[currentLevel].noHighlight();
 		unitElWrapper.querySelector("#offline-xp-button").style.display = "none";
 		unitElWrapper.querySelector(".role-wrapper").style.display = unlockedRoles ? "block" : "none";
 	}

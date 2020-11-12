@@ -212,16 +212,16 @@ class Map {
 		return this.map[y] && this.map[y][x] && this.map[y][x][0] == "." && (ignoreCreatures || (!this.enemies.some(enemy => enemy.x == x && enemy.y == y && !enemy.dead) && !playerUnits.some(unit => unit.x == x && unit.y == y && !unit.dead && unit.active)));
 	}
 
-	highlight(highlightColour, x, y){
+	highlight(x, y){
 		if (!this.mapNodes[0]) return;
-		[...document.querySelectorAll(`.highlight-${highlightColour}`)].forEach(node => node.classList.remove(`highlight-${highlightColour}`));
+		[...document.querySelectorAll(".highlight")].forEach(node => node.classList.remove("highlight"));
 		if (!this.mapNodes[y] || !this.mapNodes[y][x]) return;
-		this.mapNodes[y][x].classList.add(`highlight-${highlightColour}`);
+		this.mapNodes[y][x].classList.add("highlight");
 	}
 
-	noHighlight(highlightColour){
+	noHighlight(){
 		if (!this.mapNodes[0]) return;
-		[...document.querySelectorAll(`.highlight-${highlightColour}`)].forEach(node => node.classList.remove(`highlight-${highlightColour}`));
+		[...document.querySelectorAll(".highlight")].forEach(node => node.classList.remove("highlight"));
 	}
 }
 
