@@ -179,7 +179,6 @@ function load(){
 		partyUnits.forEach((unit, i) => {
 			unit.character = playerSymbols[(i+1) % 4];
 		})
-		displayCurrentUnit();
 		loadNextMap();
 		tickInterval = setInterval(runTick, tickTime);
 	}

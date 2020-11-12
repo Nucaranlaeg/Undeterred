@@ -100,7 +100,7 @@ function beginRun(){
 	partyUnits.forEach((unit, i) => {
 		unit.character = playerSymbols[(i+1) % 4];
 	})
-	displayCurrentUnit();
+	displaySelectedUnit();
 	displayAllUnits();
 	currentLevel = 0;
 	loadNextMap();
@@ -131,12 +131,16 @@ function resetHealth(partyUnits){
 	document.querySelector("#conditions").innerHTML = "";
 }
 
-function displayCurrentUnit(){
-	(playerUnits.find(unit => unit.current) || playerUnits[playerUnits.length - 1]).display();
+function displaySelectedUnit(){
+	if (selectedUnit){
+		selectedUnit.display();
+	}
 }
 
-function displayCurrentUnitStatus(){
-	playerUnits.find(unit => unit.current).displayStatus();
+function displaySelectedUnitStatus(){
+	if (selectedUnit){
+		selectedUnit.displayStatus();
+	}
 }
 
 function displayEnemyUnits(){
@@ -204,14 +208,6 @@ function displayAllUnits(){
 			unitEl.classList.add("current");
 		}
 		unitEl.onclick = () => {
-			if (selectedUnit == unit && tickInterval === null){
-				unit.active = !unit.active;
-				if (unit.active){
-					unitEl.classList.add("active");
-				} else {
-					unitEl.classList.remove("active");
-				}
-			}
 			unit.display();
 			selectedUnit = unit;
 		}
@@ -276,10 +272,7 @@ function applyReward(reward){
 		let ai = reward.split(" ")[1];
 		displayMessage(`You have unlocked the ${ai} ai option!`);
 		ais[ai].locked = false;
-		displayCurrentUnitStatus();
-		if (selectedUnit){
-			selectedUnit.displayStatus();
-		}
+		displaySelectedUnitStatus();
 		fillAIDropdown();
 	}
 }
@@ -309,16 +302,13 @@ function runTick(){
 		if (currentLevel % 10 == 0){
 			// Get a capBreaker each time a boss level is defeated.
 			playerUnits.find(unit => unit.current).capBreakers++;
-			displayCurrentUnit();
+			displaySelectedUnit();
 		}
 		loadNextMap();
 		save();
 	}
-	displayCurrentUnitStatus();
+	displaySelectedUnitStatus();
 	displayEnemyUnits();
-	if (selectedUnit){
-		selectedUnit.displayStatus();
-	}
 	if (playerUnits.every(unit => unit.dead || !unit.active)){
 		endRun();
 	}

@@ -53,7 +53,6 @@ function gainBase(stats){
 			autobuyerUnits.forEach(autobuyer => autobuyer.stats[stat].addBase(value));
 		});
 		calculateBaseStatValue();
-		displayCurrentUnit();
 		if (selectedUnit){
 			selectedUnit.display();
 		}
