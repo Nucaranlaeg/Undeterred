@@ -76,7 +76,7 @@ class Multiattack extends Stat {
 	}
 
 	onBeginAttack(attackStats){
-		attackStats.attacks += getOccurances(this.value);
+		attackStats.attacks += getOccurrences(this.value);
 	}
 }
 
@@ -118,7 +118,7 @@ class CriticalHit extends Stat {
 
 	onHit(attackStats){
 		for (let i = 0; i < attackStats.hits; i++){
-			let critCount = getOccurances(this.value);
+			let critCount = getOccurrences(this.value);
 			if (activeChallenge && activeChallenge.name == "Criticality" && !attackStats.attacker.playerOwned){
 				critCount++;
 			}
@@ -228,7 +228,7 @@ class Haste extends Stat {
 	}
 
 	getTicks(){
-		return getOccurances(this.value);
+		return getOccurrences(this.value);
 	}
 }
 
@@ -286,7 +286,7 @@ class ManaRegeneration extends Stat {
 	}
 }
 
-function getOccurances(value){
+function getOccurrences(value){
 	let occurances = 0;
 	while (value > 0){
 		if (Math.random() < Math.min(value, 0.75)){
