@@ -159,6 +159,7 @@ function load(){
 		document.querySelector("#tutorial1").style.display = "block";
 	}
 	
+	displaySettings();
 	calculateBaseStatValue();
 	// Only permit loading the same save 3 times before getting kicked out of the dungeon.
 	let loads = +localStorage.loads;

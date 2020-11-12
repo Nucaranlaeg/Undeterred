@@ -26,7 +26,7 @@ let currentXpPerSecEl = document.querySelector("#current-xp-per-sec");
 let runStart = null;
 let runXp = 0;
 let lagTime = 0;
-let version = "1.1.3";
+let version = "1.1.4";
 // For keeping enemy listings available after run completion
 let oldEnemies = [];
 
