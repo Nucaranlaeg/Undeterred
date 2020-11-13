@@ -868,7 +868,7 @@ maps.push(new Map("Level 27",
 					 "##...................##",
 					 "#######################"],
 					4,
-					"Autobuyer CriticalDamage",
+					"Challenge Restless",
 					"The revenants play a clever game: force you to attack the one while the other regenerates."));
 
 maps.push(new Map("Level 28",
@@ -893,7 +893,7 @@ maps.push(new Map("Level 28",
 					 "##...................##",
 					 "#######################"],
 					4,
-					"FasterTicks",
+					"Autobuyer Bleed",
 					"It's hard to believe that the revenants occur naturally here, even moreso than any of the other creatures here.  Could someone have raised them intentionally?"));
 
 maps.push(new Map("Level 29",
@@ -937,7 +937,7 @@ maps.push(new Map("Level 30",
 					 "#R....................#",
 					 "#######################"],
 					12,
-					"Autobuyer Regeneration",
+					"",
 					"A summoner is a potent threat, much more dangerous than many of the other creatures in these caverns.  Dead now, though.  You might have thought that the necromancer was the creator of these caves, but you see a path leading to deeper, more natural caverns.  You press on, undeterred."));
 
 maps.push(new Map("END",

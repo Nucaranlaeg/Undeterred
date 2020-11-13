@@ -205,6 +205,7 @@ class Unit {
 				statEl = statTemplate.cloneNode(true);
 				statEl.removeAttribute("id");
 				statEl.classList.add(stat.getQualifiedName());
+				statEl.querySelector(".value").setAttribute("data-change", `+${stat.xpMult * (stat.isPercent ? 100 : 1)}`);
 				unitEl.append(statEl);
 				statEl.querySelector(".name").innerHTML = stat.name;
 				if (stat.capIncrease){

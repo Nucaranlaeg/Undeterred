@@ -72,6 +72,11 @@ body * {
 	background-color: #555555;
 }
 
+.stat:hover .value::after {
+	content: attr(data-change);
+	color: #00a000;
+}
+
 .name {
 	text-align: center;
 	font-weight: bold;

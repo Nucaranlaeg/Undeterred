@@ -82,7 +82,7 @@ class Multiattack extends Stat {
 
 class ToHit extends Stat {
 	constructor(value = 0){
-		super("To-Hit", value, 1, false, 0, "Increases your chance to hit by roughly 2% per point (decreasing as it gets higher), based on the target's Dodge.");
+		super("To-Hit", value, 1, false, 0, "Increases your chance to hit by roughly 2% per point (decreasing as it gets higher), based on the target's Dodge. ((To-Hit + 25)/(To-Hit + Dodge + 50))");
 	}
 
 	onAttack(attackStats){
@@ -97,7 +97,7 @@ class ToHit extends Stat {
 
 class Dodge extends Stat {
 	constructor(value = 0){
-		super("Dodge", value, 1, false, 0, "Decreases your enemy's chance to hit by roughly 2% per point (decreasing as it gets higher), based on the attackers To Hit.");
+		super("Dodge", value, 1, false, 0, "Decreases your enemy's chance to hit by roughly 2% per point (decreasing as it gets higher), based on the attackers To Hit. ((To-Hit + 25)/(To-Hit + Dodge + 50))");
 	}
 }
 

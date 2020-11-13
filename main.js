@@ -184,6 +184,7 @@ function displayAllUnits(){
 		unitEl.querySelector(".kill-button").style.display = unit.preventRemoval ? "none" : "block";
 		let toggleInParty = e => {
 			e.stopPropagation();
+			if (tickInterval) return;
 			unit.active = !unit.active;
 			displayAllUnits();
 		};

@@ -1,5 +1,5 @@
 class Challenge {
-	constructor(name, description, reward, rewardDescription, illegalStats, completeLevel, completeReward){
+	constructor(name, description, reward, rewardDescription, illegalStats, completeLevel, completeReward, completionEnds = false){
 		this.name = name;
 		this.description = description;
 		this.reward = reward;
@@ -9,6 +9,7 @@ class Challenge {
 		this.bestFloor = 0;
 		this.completeLevel = completeLevel;
 		this.completeReward = completeReward;
+		this.completionEnds = completionEnds;
 	}
 
 	isIllegal(stat){
@@ -16,7 +17,7 @@ class Challenge {
 	}
 
 	updateReward(){
-		if (this.bestFloor > this.completeLevel){
+		if (this.bestFloor > this.completeLevel && this.completionEnds){
 			startChallenge(null);
 			return;
 		}
@@ -27,7 +28,7 @@ class Challenge {
 		}
 		if (this.bestFloor == this.completeLevel){
 			this.completeReward();
-			startChallenge(null);
+			if (this.completionEnds) startChallenge(null);
 		}
 	}
 }
@@ -35,14 +36,14 @@ class Challenge {
 let activeChallenge = null;
 
 let challenges = {
-	LowDamage: new Challenge("Low Damage", "Delve without the ability to increase your damage.  After beating level 20, improves to the No Offense challenge.", gainBase([["Damage", 2]]), "+2 Damage", ["Damage"], 20, unlockChallenge("NoOffense")),
-	LowHealth: new Challenge("Low Health", "Delve without the ability to increase your health.  After beating level 20, improves to the No Defense challenge.", gainBase([["Health", 20]]), "+20 Health", ["Health"], 20, unlockChallenge("NoDefense")),
+	LowDamage: new Challenge("Low Damage", "Delve without the ability to increase your damage.  After beating level 20, improves to the No Offense challenge.", gainBase([["Damage", 2]]), "+2 Damage", ["Damage"], 20, unlockChallenge("NoOffense"), true),
+	LowHealth: new Challenge("Low Health", "Delve without the ability to increase your health.  After beating level 20, improves to the No Defense challenge.", gainBase([["Health", 20]]), "+20 Health", ["Health"], 20, unlockChallenge("NoDefense"), true),
 	PlusTwoLevels: new Challenge("Plus Two Levels", "Delve, but each monster is leveled up twice.", ()=>{}, "+0.5 XP each floor", []),
 	Accuracy: new Challenge("Accuracy", "Delve, but all monsters have 100x as much To-Hit.", gainBase([["Protection", 2]]), "+2 Protection", []),
-	Criticality: new Challenge("Criticality", "Delve, but all enemy attacks crit one additional time.", gainBase([["CriticalDamage", 0.02]]), "+2% Critical Damage", []),
+	Criticality: new Challenge("Criticality", "Delve, but all enemy attacks crit one additional time.  After beating level 20, unlocks the Critical Damage Autobuyer.", gainBase([["CriticalDamage", 0.02]]), "+2% Critical Damage", [], 20, unlockAutobuyer("CriticalDamage")),
 	NoOffense: new Challenge("No Offense", "Delve without the ability to increase any offensive stat.", gainBase([["ToHit", 2], ["Damage", 2]]), "+2 To-Hit & Damage", ["Damage", "ToHit", "Multiattack", "CriticalHit", "CriticalDamage", "Bleed"]),
 	NoDefense: new Challenge("No Defense", "Delve without the ability to increase any defensive stat.", gainBase([["Dodge", 2], ["Health", 20]]), "+2 Dodge & +20 Health", ["Health", "Dodge", "Protection", "Block", "Regeneration", "Vampirism", "Blunting"]),
-	NoRespawn: new Challenge("Restless", "Delve, but there is no healing between levels.", () => {}, "+5% regen effectiveness", []),
+	NoRespawn: new Challenge("Restless", "Delve, but there is no healing between levels.  After beating level 20, unlocks the Regeneration Autobuyer.", () => {}, "+5% regen effectiveness", [], 20, unlockAutobuyer("Regeneration")),
 };
 
 function gainBase(stats){
@@ -65,6 +66,12 @@ function unlockChallenge(name){
 	};
 }
 
+function unlockAutobuyer(name){
+	return () => {
+		applyReward(`Autobuyer ${name}`);
+	};
+}
+
 function displayChallenges(){
 	if (!settings.showChallenges) return;
 	document.querySelector("#challenges-wrapper").style.display = "inline-block";
@@ -74,12 +81,11 @@ function displayChallenges(){
 	}
 	let challengeTemplate = document.querySelector("#challenge-template");
 	for (let challenge of Object.values(challenges)){
-		if (challenge.locked || (challenge.completeLevel && challenge.bestFloor == challenge.completeLevel)) continue;
+		if (challenge.locked || (challenge.completionEnds && challenge.bestFloor == challenge.completeLevel)) continue;
 		let cEl = challengeTemplate.cloneNode(true);
 		cEl.removeAttribute("id");
 		cEl.querySelector(".name").innerHTML = challenge.name;
 		cEl.querySelector(".description").innerHTML = challenge.description;
-		cEl.title = challenge.description;
 		cEl.querySelector(".reward").innerHTML = challenge.rewardDescription;
 		cEl.querySelector(".highest-floor").innerHTML = "Best: " + challenge.bestFloor;
 		if (challenge == activeChallenge){
