@@ -26,7 +26,7 @@ let currentXpPerSecEl = document.querySelector("#current-xp-per-sec");
 let runStart = null;
 let runXp = 0;
 let lagTime = 0;
-let version = "1.1.5";
+let version = "1.1.6";
 document.title = `Undeterred V${version}`;
 // For keeping enemy listings available after run completion
 let oldEnemies = [];
@@ -150,8 +150,8 @@ function displayEnemyUnits(){
 		unitEl.querySelector(".total-xp").innerHTML = unit.xp;
 		unitEl.querySelector(".character").innerHTML = unit.character || "";
 		unitEl.onclick = () => {
-			unit.display();
 			selectedUnit = unit;
+			displaySelectedUnit();
 		}
 		enemyDiv.append(unitEl);
 		unit.enemySummaryNode = unitEl;
@@ -205,8 +205,8 @@ function displayAllUnits(){
 			unitEl.classList.add("current");
 		}
 		unitEl.onclick = () => {
-			unit.display();
 			selectedUnit = unit;
+			displaySelectedUnit();
 		}
 		unitEl.querySelector(".kill-button").onclick = e => {
 			e.stopPropagation();

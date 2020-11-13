@@ -138,18 +138,22 @@ class Unit {
 		} else {
 			return false;
 		}
-		if (event) event.stopPropagation();
-		this.display();
+		if (event){
+			event.stopPropagation();
+			this.display();
+		}
 		return true;
 	}
 
 	unBreakCap(stat, event){
+		if (event) event.stopPropagation();
 		if (this.stats[stat].decreaseCap()){
 			this.capBreakers += this.stats[stat].breaks + 1;
-			this.display();
+			if (event){
+				this.display();
+			}
 			return true;
 		}
-		if (event) event.stopPropagation();
 		return false;
 	}
 
@@ -374,7 +378,7 @@ class Unit {
 			this.xp += settings.multiXp;
 			this.autobuy();
 			this.updateXP();
-			this.display(false);
+			this.display();
 			offlineTimeEl.innerHTML = formatNumber(offlineData.offlineTime / 1000);
 		}
 	}

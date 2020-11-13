@@ -15,7 +15,7 @@ class AutobuyerUnit extends Unit {
 		if (this.stats[stat].value < baseStats[stat]) {
 			this.stats[stat].value = baseStats[stat];
 		}
-		this.display(false);
+		this.display();
 		this.updateXP();
 	}
 
@@ -64,6 +64,7 @@ class AutobuyerUnit extends Unit {
 	changeRole(event){
 		viewedAutobuyerUnit = event.target.value;
 		autobuyerUnits[viewedAutobuyerUnit].display();
+		selectedUnit = autobuyerUnits[viewedAutobuyerUnit];
 	}
 }
 
@@ -75,7 +76,6 @@ function clearAutobuy(){
 			autobuyer.stats[key].value = value;
 		}
 	});
-	autobuyerUnits[0].display();
 }
 
 function configureAutobuyer(){
