@@ -105,11 +105,11 @@ let creatures = {
 	"R": {
 		name: "Revenant",
 		Health: 10000,
-		Damage: 140,
+		Damage: 90,
 		ToHit: 100,
 		Dodge: 25,
 		Protection: 40,
-		Regeneration: 100,
+		Regeneration: 80,
 		xp: 20,
 		ai: "Coward",
 		base_level: -20,

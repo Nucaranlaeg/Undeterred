@@ -135,9 +135,12 @@ class Unit {
 			if (this.stats[stat].increaseCap()){
 				this.capBreakers -= this.stats[stat].breaks;
 			}
+		} else {
+			return false;
 		}
 		if (event) event.stopPropagation();
 		this.display();
+		return true;
 	}
 
 	unBreakCap(stat, event){
@@ -181,10 +184,12 @@ class Unit {
 				e.target.value = this.ai.name;
 			}
 		};
-		unitElWrapper.querySelector(".role").onchange = this.changeRole;
+		unitElWrapper.querySelector(".role").onchange = this.changeRole.bind(this);
+		unitElWrapper.querySelector(".role").value = this.role;
 		unitElWrapper.querySelector(".removal").innerHTML = this.preventRemoval ? "Cannot be deleted" : "Can be deleted";
 		unitElWrapper.querySelector(".removal").onclick = e => {
 			e.stopPropagation();
+			if (tickInterval) return;
 			this.preventRemoval = !this.preventRemoval;
 			unitElWrapper.querySelector(".removal").innerHTML = this.preventRemoval ? "Cannot be deleted" : "Can be deleted";
 			displayAllUnits();
@@ -203,9 +208,9 @@ class Unit {
 				unitEl.append(statEl);
 				statEl.querySelector(".name").innerHTML = stat.name;
 				if (stat.capIncrease){
-					statEl.querySelector(".cap-increase").onclick = this.breakCap.bind(this, stat.getQualifiedName(), this.current);
+					statEl.querySelector(".cap-increase").onclick = this.breakCap.bind(this, stat.getQualifiedName());
 					statEl.querySelector(".cap-increase").oncontextmenu = e => {
-						this.unBreakCap(stat.getQualifiedName(), this.current);
+						this.unBreakCap(stat.getQualifiedName());
 						e.preventDefault();
 						e.stopPropagation();
 					};
@@ -305,6 +310,7 @@ class Unit {
 			}
 			index = (index + 1) % autobuyStats.length;
 		}
+		if (this == selectedUnit) this.display();
 	}
 
 	autobuyCapBreakers(){
@@ -316,7 +322,9 @@ class Unit {
 		let index = 0;
 		while (this.capBreakers >= 1 && autobuyStats.length){
 			if (autobuyStats[index][1].cap > this.stats[autobuyStats[index][0]].cap){
-				this.breakCap(autobuyStats[index][0], true, null, 1);
+				if (!this.breakCap(autobuyStats[index][0], null)){
+					autobuyStats.splice(index, 1);
+				}
 			} else {
 				autobuyStats.splice(index, 1);
 			}
@@ -330,7 +338,10 @@ class Unit {
 	tick(extraTicks = null){
 		if (this.dead) return;
 		Object.values(this.stats).forEach(s => s.onTick(this));
-		Object.values(this.conditions).forEach(s => s.onTick(this));
+		if (extraTicks === null){
+			Object.values(this.conditions).forEach(s => s.onTick(this));
+			extraTicks = this.stats.Haste.getTicks();
+		}
 		let move = this.ai.move(maps[currentLevel], this);
 		if (this.spell && this.spell.tryCast(this)){
 			move = {};
@@ -340,9 +351,6 @@ class Unit {
 		} else if (move.type == "move"){
 			this.x = move.x;
 			this.y = move.y;
-		}
-		if (extraTicks === null){
-			extraTicks = this.stats.Haste.getTicks();
 		}
 		if (extraTicks > 0){
 			return this.tick(extraTicks - 1);

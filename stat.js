@@ -113,7 +113,7 @@ class Damage extends Stat {
 
 class CriticalHit extends Stat {
 	constructor(value = 0){
-		super("Critical Hit", value, 0.0075, true, 100, "Increases your chance to score a critical hit.  Max chance 75%.  Once past 75%, provides a chance to score a critical hit a third (fourth, etc.) time.  Multiple critical hits multiply each other.");
+		super("Critical Hit", value, 0.0075, true, 100, "Increases your chance to score a critical hit (initially 2x damage).  Max chance 75%.  Once past 75%, provides a chance to score a critical hit a third (fourth, etc.) time.  Multiple critical hits multiply each other.");
 	}
 
 	onHit(attackStats){

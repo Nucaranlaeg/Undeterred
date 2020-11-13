@@ -166,7 +166,7 @@ function load(){
 	let loadFloor = +localStorage.loadFloor;
 	if (loadFloor == currentLevel){
 		localStorage.loads = loads + 1;
-		if (loads >= 300){
+		if (loads >= 3){
 			currentLevel = 0;
 			displayHelpMessage("loadRepeatStop");
 		}

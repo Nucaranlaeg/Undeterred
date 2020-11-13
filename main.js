@@ -10,7 +10,7 @@ let baseStats = {
 	Health: 50,
 	Damage: 5,
 };
-let autobuyerUnits = [new AutobuyerUnit(), new AutobuyerUnit(), new AutobuyerUnit(), new AutobuyerUnit()];
+let autobuyerUnits = [new AutobuyerUnit(0), new AutobuyerUnit(1), new AutobuyerUnit(2), new AutobuyerUnit(3)];
 let viewedAutobuyerUnit = 0;
 let unlockedRoles = false;
 let base_stat_value = 211;
@@ -26,7 +26,8 @@ let currentXpPerSecEl = document.querySelector("#current-xp-per-sec");
 let runStart = null;
 let runXp = 0;
 let lagTime = 0;
-let version = "1.1.4";
+let version = "1.1.5";
+document.title = `Undeterred V${version}`;
 // For keeping enemy listings available after run completion
 let oldEnemies = [];
 
@@ -37,11 +38,6 @@ calculateBaseStatValue();
 
 function beginRun(){
 	if (tickInterval) return;
-	let currentUnit = playerUnits.find(unit => unit.current);
-	if (currentUnit) {
-		currentUnit.current = false;
-		currentUnit.deathXp = currentUnit.getStatValue();
-	}
 	let partyUnits = playerUnits.filter(unit => unit.active);
 	let lastUnitRole = 0;
 	while (partyUnits.length > 3){
@@ -332,6 +328,11 @@ function stopRun(){
 	document.querySelector("#start-button").classList.remove("running");
 	maps[currentLevel].uninstantiate();
 	playerUnits.forEach(unit => unit.character = "");
+	let currentUnit = playerUnits.find(unit => unit.current);
+	if (currentUnit) {
+		currentUnit.current = false;
+		currentUnit.deathXp = currentUnit.getStatValue();
+	}
 	currentLevel = 0;
 	clearInterval(tickInterval);
 	tickInterval = null;

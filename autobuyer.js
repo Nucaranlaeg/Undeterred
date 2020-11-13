@@ -1,5 +1,5 @@
 class AutobuyerUnit extends Unit {
-	constructor() {
+	constructor(index) {
 		super(true, "Autobuyer", {}, "Simple");
 		this.xp = Infinity;
 		this.capBreakers = Infinity;
@@ -7,6 +7,7 @@ class AutobuyerUnit extends Unit {
 		this.stats.Health.value = 50;
 		this.stats.Damage.value = 5;
 		this.isAutobuyer = true;
+		this.role = index;
 	}
 
 	unspendXp(stat){
@@ -75,4 +76,9 @@ function clearAutobuy(){
 		}
 	});
 	autobuyerUnits[0].display();
+}
+
+function configureAutobuyer(){
+	autobuyerUnits[viewedAutobuyerUnit].display();
+	selectedUnit = autobuyerUnits[viewedAutobuyerUnit];
 }

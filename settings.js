@@ -33,8 +33,8 @@ let settingMessages = {
 		"Assign up to 1000 experience points at once",
 	],
 	autobuyer: [
-		"Configure Autobuyer (Off)",
-		"Configure Autobuyer (On)",
+		"Autobuyer Off",
+		"Autobuyer On",
 	],
 }
 
@@ -62,12 +62,6 @@ function toggleSetting(label){
 		if (selectedUnit){
 			selectedUnit.displayStatus();
 		}
-	} else if (label == "autobuyer"){
-		if (selectedUnit && selectedUnit.isAutobuyer){
-			settings.autobuyer = !settings.autobuyer;
-		}
-		autobuyerUnits[viewedAutobuyerUnit].display();
-		selectedUnit = autobuyerUnits[viewedAutobuyerUnit];
 	} else {
 		settings[label] = !settings[label];
 	}
@@ -81,6 +75,7 @@ function displaySettings(){
 	options.querySelector("#auto-discard").innerHTML = settingMessages.autoDiscard[autoDiscardOptions.findIndex(s => s == settings.autoDiscard)];
 	options.querySelector("#multi-xp").innerHTML = settingMessages.multiXp[multiXpOptions.findIndex(s => s == settings.multiXp)];
 	options.querySelector("#autobuyer").innerHTML = settingMessages.autobuyer[+settings.autobuyer];
+	options.querySelector("#configure-autobuyer").style.display = lockedSettings.autobuyer ? "none" : "block";
 	// Hide locked settings.
 	for (const [key, value] of Object.entries(lockedSettings)){
 		options.querySelector(`#${key.replace(/([A-Z])/, "-$1").toLowerCase()}`).style.display = value ? "none" : "block";

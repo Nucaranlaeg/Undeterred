@@ -2,7 +2,7 @@
 <meta charset="UTF-8" http-equiv="Content-Type">
 <html>
 	<head>
-		<title>Undeterred v1.1.4</title>
+		<title>Undeterred</title>
 		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
 	<body>
@@ -59,8 +59,9 @@
 			<button id="auto-unselect" class="option-button" onclick="toggleSetting('autoUnselect')"></button>
 			<button id="autorun" class="option-button" onclick="toggleSetting('autorun')"></button>
 			<button id="auto-discard" class="option-button" onclick="toggleSetting('autoDiscard')"></button>
-			<button id="autobuyer" class="option-button" onclick="toggleSetting('autobuyer')"></button>
 			<button id="multi-xp" class="option-button" onclick="toggleSetting('multiXp')" oncontextmenu="toggleSetting('multiXp');toggleSetting('multiXp');toggleSetting('multiXp');event.preventDefault()"></button>
+			<button id="autobuyer" class="option-button" onclick="toggleSetting('autobuyer')"></button>
+			<button id="configure-autobuyer" class="option-button" onclick="configureAutobuyer()">Configure Autobuyer</button>
 			<button id="stop-button" onclick="stopRun()">Exit Dungeon</button>
 			<button id="save-button" onclick="trySave()">Save Game<div class="description">Game saves automatically upon completing a floor.</div></button>
 			<button id="export-button" onclick="openImportExport()">Import/Export</button>
@@ -154,7 +155,7 @@
 				In Undeterred, your adventurers explore a cavern.  Each time you enter the cavern, you can bring three of your experienced adventurers and one new one.
 			</div>
 			<div class="tutorial-dialogue" style="top: 150px; left: 50px; width: 300px;">
-				An adventurer that is green is in your party, while one that is gray is not.  Click once to select an adventurer, then again to toggle whether it's in your party.
+				An adventurer that is green is in your party, while one that is gray is not.  Click to select an adventurer and view their stats.
 				The little x in the top right will delete an adventurer.
 				<div class="unit-summary" style="width: 200px; background-color: #00800033;">
 					<div class="name">Adventurer #57<span class="loop-count"></span></div>
@@ -165,6 +166,7 @@
 					<div class="death-xp" title="How much xp this unit had when completing its delve.  The higher it is, the slower inactive xp gains slow down."></div>
 					<div class="summary-label">Free XP:</div>
 					<div class="spendable-xp">0</div>
+					<div class="party-assign">Remove from party</div>
 				</div>
 			</div>
 		</div>
