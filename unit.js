@@ -302,6 +302,7 @@ class Unit {
 		let autobuyStats = Object.keys(autobuyerUnits[this.role].stats);
 		shuffle(autobuyStats);
 		let index = 0;
+		let spent = false;
 		while (this.xp >= 1 && autobuyStats.length){
 			if (autobuyerUnits[this.role].stats[autobuyStats[index]].value - 0.001 > this.stats[autobuyStats[index]].value){
 				let startingValue = this.stats[autobuyStats[index]].value;
@@ -309,13 +310,15 @@ class Unit {
 				// If we're at the cap or something else prevents us from buying...
 				if (startingValue == this.stats[autobuyStats[index]].value){
 					autobuyStats.splice(index, 1);
+				} else {
+					spent = true;
 				}
 			} else {
 				autobuyStats.splice(index, 1);
 			}
 			index = (index + 1) % autobuyStats.length;
 		}
-		if (this == selectedUnit) this.display();
+		if (this == selectedUnit && spent) this.display();
 	}
 
 	autobuyCapBreakers(){
