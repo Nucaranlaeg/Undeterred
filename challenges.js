@@ -43,7 +43,8 @@ let challenges = {
 	Criticality: new Challenge("Criticality", "Delve, but all enemy attacks crit one additional time.  After beating level 20, unlocks the Critical Damage Autobuyer.", gainBase([["CriticalDamage", 0.02]]), "+2% Critical Damage", [], 20, unlockAutobuyer("CriticalDamage")),
 	NoOffense: new Challenge("No Offense", "Delve without the ability to increase any offensive stat.", gainBase([["ToHit", 2], ["Damage", 2]]), "+2 To-Hit & Damage", ["Damage", "ToHit", "Multiattack", "CriticalHit", "CriticalDamage", "Bleed"]),
 	NoDefense: new Challenge("No Defense", "Delve without the ability to increase any defensive stat.", gainBase([["Dodge", 2], ["Health", 20]]), "+2 Dodge & +20 Health", ["Health", "Dodge", "Protection", "Block", "Regeneration", "Vampirism", "Blunting"]),
-	NoRespawn: new Challenge("Restless", "Delve, but there is no healing between levels.  After beating level 20, unlocks the Regeneration Autobuyer.", () => {}, "+5% regen effectiveness", [], 20, unlockAutobuyer("Regeneration")),
+	Restless: new Challenge("Restless", "Delve, but there is no healing between levels and all enemies gain significant max health (x10) and regeneration (equal to original max health).  After beating level 10, unlocks the Regeneration Autobuyer.", () => {}, "+10% regen effectiveness", [], 10, unlockAutobuyer("Regeneration")),
+	Respawning: new Challenge("Respawning", "Whenever you kill an enemy, it respawns in an unexplored area of the map, five levels stronger.  You only get xp for killing them the first time.", displaySelectedUnit, "+1% caps on all stats", []),
 };
 
 function gainBase(stats){
@@ -54,9 +55,7 @@ function gainBase(stats){
 			autobuyerUnits.forEach(autobuyer => autobuyer.stats[stat].addBase(value));
 		});
 		calculateBaseStatValue();
-		if (selectedUnit){
-			selectedUnit.display();
-		}
+		displaySelectedUnit();
 	};
 }
 

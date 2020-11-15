@@ -122,7 +122,7 @@
 			<div id="challenges"></div>
 			<button id="exit-challenge" ondblclick="startChallenge(null)">Exit Challenge<br>(Double click)</button>
 		</div>
-		<div id="challenge-confirm" onclick="document.querySelector('#challenge-confirm').style.display = 'none'">
+		<div id="challenge-confirm" class="lightbox" onclick="document.querySelector('#challenge-confirm').style.display = 'none'">
 			<div id="challenge-confirm-text" onclick="event.stopPropagation()">
 				<div class="relative-wrapper">
 					Really begin the <span id="challenge-confirm-name"></span> challenge?<br>
@@ -136,7 +136,7 @@
 				</div>
 			</div>
 		</div>
-		<div id="export-wrapper" onclick="document.querySelector('#export-wrapper').style.display = 'none'">
+		<div id="export-wrapper" class="lightbox" onclick="document.querySelector('#export-wrapper').style.display = 'none'">
 			<div id="export-text" onclick="event.stopPropagation()">
 				<div class="relative-wrapper">
 					<textarea id="save-string"></textarea>
@@ -146,12 +146,22 @@
 				</div>
 			</div>
 		</div>
-		<div id="tutorial1" class="tutorial" onclick="(this.style.display = 'none') && (document.querySelector('#tutorial2').style.display = 'block')">
+		<div id="help-box" class="lightbox" onclick="this.style.display = 'none'">
+			<div id="help-tabs">
+				<div class="tab">General hints</div>
+				<div class="tab">Bestiary</div>
+				<div class="tab">AIs</div>
+			</div>
+			<div id="general-help" class="help-section"></div>
+			<div id="bestiary-help" class="help-section"></div>
+			<div id="ai-help" class="help-section"></div>
+		</div>
+		<div id="tutorial1" class="lightbox" onclick="(this.style.display = 'none') && (document.querySelector('#tutorial2').style.display = 'block')">
 			<div class="tutorial-dialogue" style="top: 50px; left: 50px;">
 				Welcome to Undeterred!  Click anywhere to continue.
 			</div>
 		</div>
-		<div id="tutorial2" class="tutorial" onclick="(this.style.display = 'none') && (document.querySelector('#tutorial3').style.display = 'block')">
+		<div id="tutorial2" class="lightbox" onclick="(this.style.display = 'none') && (document.querySelector('#tutorial3').style.display = 'block')">
 			<div class="tutorial-dialogue" style="top: 50px; left: 50px; width: 300px;">
 				In Undeterred, your adventurers explore a cavern.  Each time you enter the cavern, you can bring three of your experienced adventurers and one new one.
 			</div>
@@ -171,7 +181,7 @@
 				</div>
 			</div>
 		</div>
-		<div id="tutorial3" class="tutorial" onclick="(this.style.display = 'none') && (document.querySelector('#tutorial4').style.display = 'block')">
+		<div id="tutorial3" class="lightbox" onclick="(this.style.display = 'none') && (document.querySelector('#tutorial4').style.display = 'block')">
 			<div class="tutorial-dialogue" style="top: 50px; left: 50px; width: 300px;">
 				Once an adventurer is selected, you'll see their stats.<br>
 				<div class="unit-col col">
@@ -192,7 +202,7 @@
 				You'll unlock more as you delve deeper.
 			</div>
 		</div>
-		<div id="tutorial4" class="tutorial" onclick="(this.style.display = 'none')">
+		<div id="tutorial4" class="lightbox" onclick="(this.style.display = 'none')">
 			<div class="tutorial-dialogue" style="top: 50px; left: 50px; width: 200px;">
 				You can also click on enemies to see their stats.
 			</div>
@@ -200,7 +210,7 @@
 				Now, click the "Enter the dungeon!" button to begin!
 			</div>
 		</div>
-		<div id="tutorial5" class="tutorial" onclick="(this.style.display = 'none')">
+		<div id="tutorial5" class="lightbox" onclick="(this.style.display = 'none')">
 			<div class="tutorial-dialogue" style="top: 50px; left: 50px; width: 300px;">
 				You've unlocked the autobuyer!  If you click the "autobuyer" button on the left, you can toggle whether on not it's active as well as adjust what stats you're automatically buying.
 			</div>
@@ -220,7 +230,6 @@
 		<script src="messages.js"></script>
 		<script src="challenges.js"></script>
 		<script src="main.js"></script>
-		<script src="tutorial.js"></script>
 		<script src="save.js"></script>
 	</body>
 </html>

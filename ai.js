@@ -1,7 +1,8 @@
 class AI {
-	constructor(name, description, locked = true){
+	constructor(name, description, longDescription, locked = true){
 		this.name = name;
 		this.description = description;
+		this.longDescription = longDescription;
 		this.locked = locked;
 	}
 	
@@ -10,7 +11,7 @@ class AI {
 
 class AISimple extends AI {
 	constructor(){
-		super("Simple", "Moves toward the nearest accessible enemy or the nearest unexplored area.", false);
+		super("Simple", "Moves toward the nearest accessible enemy or the nearest unexplored area.", "First, attacks any enemy within range.  Second, attempts to move toward the nearest enemy with a clear path.  Third, attempts to move toward the nearest unexplored area with a clear path.  If a clear path is not found to either, this AI causes the unit to stays still.  It can be useful when finding more enemies causes the party to be overwhelmed.", false);
 	}
 	
 	move(map, unit){
@@ -63,7 +64,7 @@ class AISimple extends AI {
 
 class AINearest extends AI {
 	constructor(){
-		super("Nearest", "Moves toward the nearest enemy or unexplored space.");
+		super("Nearest", "Moves toward the nearest enemy or unexplored space.", "First, attacks any enemy within range.  Second, attempts to move toward the nearest enemy or unexplored space with a clear path to it.  Third, attempts to move toward the nearest enemy.  This AI can be useful when the party tends to get overwhelmed moving through chokepoints, or just to clear faster in general.");
 	}
 	
 	move(map, unit){
@@ -105,7 +106,7 @@ class AINearest extends AI {
 
 class AICoward extends AINearest {
 	constructor(){
-		super("Coward", "Flees enemies when low on health with positive regen.");
+		super("Coward", "Flees enemies when low on health with positive regen.", "This AI is an extension of Nearest.  If below 100% Health, there is a chance that this AI will direct the unit to move away from the nearest enemy, scaling up to 100% chance at 25% Health.  If the unit using Coward is not regenerating Health, it will never flee.");
 	}
 	
 	move(map, unit){
@@ -153,7 +154,7 @@ class AICoward extends AINearest {
 
 class AISummoner extends AI {
 	constructor(){
-		super("Summoner", "Stays still and summons minions to fight for him.");
+		super("Summoner", "Stays still and summons minions to fight for him.", "");
 	}
 	
 	move(map, unit){

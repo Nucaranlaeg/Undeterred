@@ -54,6 +54,11 @@ class Unit {
 		if (activeChallenge && activeChallenge.name == "Accuracy" && name != "Adventurer"){
 			this.stats.ToHit.value *= 100;
 		}
+		if (activeChallenge && activeChallenge.name == "Restless" && name != "Adventurer"){
+			this.stats.Regeneration.unlock();
+			this.stats.Regeneration.value += this.stats.Health.value;
+			this.stats.Health.value *= 10;
+		}
 		// Number of times this unit's caps can be increased.
 		this.capBreakers = 0;
 		// Only relevant to player units - the player can have 3 units (plus the current one) active at a time.
@@ -83,6 +88,8 @@ class Unit {
 		this.isAutobuyer = false;
 		// This unit's selected spell.
 		this.spell = null;
+		// This unit's level, if the unit is a monster.
+		this.level = stats.level;
 	}
 	
 	attack(enemy){
@@ -113,6 +120,14 @@ class Unit {
 			maps[currentLevel].noHighlight();
 		}
 		this.removeSummary();
+		if (!this.playerOwned && activeChallenge && activeChallenge.name == "Respawning"){
+			let unexplored = maps[currentLevel].getAllUnexplored();
+			if (unexplored.length){
+				let target = Math.floor(Math.random() * unexplored.length);
+				let respawn = maps[currentLevel].summon(unexplored[target][0], unexplored[target][1], this.character, this.level + 5);
+				respawn.xp = 0;
+			}
+		}
 	}
 	
 	removeSummary(){
@@ -231,7 +246,7 @@ class Unit {
 			statEl.querySelector(".value").innerHTML = formatNumber(stat.isPercent ? stat.value * 100 : stat.value) + (stat.isPercent ? "%" : "");
 			statEl.querySelector(".description").innerHTML = stat.description;
 			if (stat.cap !== Infinity && this.playerOwned){
-				statEl.querySelector(".cap").innerHTML = "(" + (stat.isPercent ? formatNumber(stat.cap * 100) + "%" : formatNumber(stat.cap)) + ")";
+				statEl.querySelector(".cap").innerHTML = "(" + (stat.isPercent ? formatNumber(stat.getEffectiveCap() * 100) + "%" : formatNumber(stat.getEffectiveCap())) + ")";
 			}
 			if (activeChallenge && activeChallenge.isIllegal(stat)) statEl.classList.add("disabled");
 		});
@@ -245,8 +260,9 @@ class Unit {
 		unitElWrapper.querySelector(".ai").value = this.ai.name;
 		unitElWrapper.querySelector(".role-wrapper").style.display = (this.name == "Adventurer" || this.isAutobuyer) && unlockedRoles ? "block" : "none";
 		let offlineXpButton = unitElWrapper.querySelector("#offline-xp-button");
-		if (this.offlineTimeCost() < offlineData.offlineTime && this.playerOwned){
+		if (this.playerOwned){
 			offlineXpButton.style.display = "inline-block";
+			offlineXpButton.disabled = this.offlineTimeCost() > offlineData.offlineTime;
 			offlineXpButton.querySelector(".offline-xp-button-desc").innerHTML = `Cost for ${settings.multiXp} xp: ${formatNumber(this.offlineTimeCost() / 1000)}s`;
 			offlineXpButton.onclick = this.spendOfflineTime.bind(this);
 		} else {
@@ -367,6 +383,7 @@ class Unit {
 
 	refillHealth(){
 		this.stats.Health.current = this.stats.Health.value;
+		this.stats.Mana.current = this.stats.Mana.value;
 		Object.values(this.conditions).forEach(s => s.reset());
 	}
 

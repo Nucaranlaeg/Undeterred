@@ -21,6 +21,13 @@ function save(){
 						cap: stat.cap,
 						value: stat.value,
 						breaks: stat.breaks,
+						current: stat.current,
+					};
+				}),
+				conditions: Object.values(unit.conditions).map(condition => {
+					return {
+						name: condition.getQualifiedName(),
+						value: condition.value,
 					};
 				}),
 				loopNumber: unit.loopNumber,
@@ -97,6 +104,7 @@ function load(){
 	offlineTimeEl.innerHTML = formatNumber(offlineData.offlineTime / 1000);
 	document.querySelector("#xp-per-sec").innerHTML = formatNumber(offlineData.xpPerSec);
 	if (!maps[currentLevel]) currentLevel = 0;
+	activeChallenge = challenges[saveGame.activeChallenge] || null;
 	playerUnits = saveGame.units.map(unitData => {
 		let unit = new Unit(true, "Adventurer", {}, unitData.ai, false, unitData.loopNumber);
 		unitData.stats.forEach(stat => {
@@ -112,6 +120,12 @@ function load(){
 		unit.deathXp = unitData.deathXp;
 		unit.preventRemoval = unitData.preventRemoval;
 		unit.role = unitData.role;
+		if (activeChallenge && activeChallenge.name == "Restless") {
+			unit.stats.Health.current = unitData.stats.find(s => s.name == "Health").current;
+			unitData.conditions.forEach(condition => {
+				unit.conditions[condition.name].value = condition.value;
+			});
+		}
 		return unit;
 	});
 	// Load autobuyer
@@ -133,9 +147,9 @@ function load(){
 	});
 	unlockedRoles = saveGame.unlockedRoles;
 
-	activeChallenge = challenges[saveGame.activeChallenge] || null;
 	saveGame.challenges.forEach(challengeData => {
 		let challenge = challenges[challengeData.name];
+		if (!challenge) return;
 		challenge.locked = challengeData.locked;
 		challenge.bestFloor = challengeData.bestFloor;
 	});
@@ -183,6 +197,7 @@ function load(){
 		loadNextMap();
 		tickInterval = setInterval(runTick, tickTime);
 	}
+	displayChallenges();
 	displayAllUnits();
 }
 

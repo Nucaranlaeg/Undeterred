@@ -42,7 +42,7 @@ class Bleeding extends Condition {
 	}
 
 	isOverCleanseThreshold(unit){
-		return this.value > unit.stats.Health.current / 50;
+		return this.value > unit.stats.Health.current / 100;
 	}
 
 	cleanse(){

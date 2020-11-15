@@ -27,7 +27,8 @@ class AutobuyerUnit extends Unit {
 	unBreakCap(stat, event){
 		if (super.unBreakCap(stat, event)){
 			this.capBreakersUsed -= this.stats[stat].breaks + 1;
-			this.displayStatus();
+			this.stats[stat].gainXp(0);
+			this.display();
 		}
 	}
 
@@ -47,7 +48,7 @@ class AutobuyerUnit extends Unit {
 
 	displayStatus(){
 		let unitElWrapper = document.querySelector("#unit-wrapper");
-		unitElWrapper.querySelector(".xp-amount").innerHTML = this.getSpentStatValue();
+		unitElWrapper.querySelector(".xp-amount").innerHTML = formatNumber(this.getSpentStatValue());
 		unitElWrapper.querySelector(".cap-breakers").innerHTML = this.capBreakersUsed;
 		unitElWrapper.querySelector(".ai").value = this.ai.name;
 		unitElWrapper.querySelector(".ai").removeAttribute("disabled");

@@ -58,6 +58,7 @@ class Map {
 			enemyUnit.spell = enemy.spell;
 		}
 		this.enemies.push(enemyUnit);
+		return enemyUnit;
 	}
 
 	checkComplete(){
@@ -222,6 +223,12 @@ class Map {
 	noHighlight(){
 		if (!this.mapNodes[0]) return;
 		[...document.querySelectorAll(".highlight")].forEach(node => node.classList.remove("highlight"));
+	}
+
+	getAllUnexplored(){
+		return this.map.map((row, y) => row.map((cell, x) => (cell[0] == "." && !cell[1] && !this.enemies.some(enemy => enemy.x == x && enemy.y == y)) ? [x, y] : false))
+		               .flat()
+		               .filter(x => x);
 	}
 }
 
@@ -937,7 +944,7 @@ maps.push(new Map("Level 30",
 					 "#R....................#",
 					 "#######################"],
 					12,
-					"",
+					"Challenge Respawning",
 					"A summoner is a potent threat, much more dangerous than many of the other creatures in these caverns.  Dead now, though.  You might have thought that the necromancer was the creator of these caves, but you see a path leading to deeper, more natural caverns.  You press on, undeterred."));
 
 maps.push(new Map("END",

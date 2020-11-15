@@ -108,7 +108,7 @@ function loadNextMap(){
 	oldEnemies = [];
 	let partyUnits = playerUnits.filter(unit => unit.active).reverse();
 	// On moving to the next level, all player units come back to life
-	// Unless in the NoRespawn challenge.
+	// Unless in the Restless challenge.
 	if (!activeChallenge || activeChallenge.name != "Restless"){
 		resetHealth(partyUnits);
 	}

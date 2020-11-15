@@ -19,7 +19,7 @@ class Spell {
 
 class Heal extends Spell {
 	constructor(){
-		super("Heal", "Restores 25% health to the lowest-health ally below 75% max health.", 50);
+		super("Heal", "Restores 10% health to the lowest-health ally below 75% max health.", 50);
 	}
 
 	onCast(caster){
@@ -31,22 +31,27 @@ class Heal extends Spell {
 		}
 		if (!allies.length) return false;
 		minHPAlly = allies.sort((a, b) => a.stats.Health.current - b.stats.Health.current);
-		minHPAlly.stats.Health.heal(minHPAlly.stats.Health.value / 4);
+		minHPAlly.stats.Health.heal(minHPAlly.stats.Health.value / 10);
 		return true;
 	}
 }
 
 class Cleanse extends Spell {
 	constructor(){
-		super("Cleanse", "Reduces the effect of all conditions by 25% on the caster (thresholds are condition-specific).", 100);
+		super("Cleanse", "Reduces the effect of all conditions by 10% on the a random ally with high enough conditions (thresholds are condition-specific).", 100);
 	}
 
 	onCast(caster){
-		if (caster.conditions.some(condition => condition.isOverCleanseThreshold(caster))){
-			caster.conditions.forEach(condition => condition.cleanse());
-			return true;
+		allies = [];
+		if (caster.playerOwned){
+			allies = playerUnits.filter(unit => unit.active && unit.conditions.some(condition => condition.isOverCleanseThreshold(unit)));
+		} else {
+			allies = maps[currentLevel].enemies.filter(unit => unit.conditions.some(condition => condition.isOverCleanseThreshold(unit)));
 		}
-		return false;
+		if (!allies.length) return false;
+		let target = Math.floor(Math.random() * allies.length);
+		allies[target].conditions.forEach(condition => condition.cleanse());
+		return true;
 	}
 }
 
@@ -67,7 +72,8 @@ class Summon extends Spell {
 		shuffle(possibleSummonLocations);
 		for (let i = 0; i < possibleSummonLocations.length; i++){
 			if (maps[currentLevel].isEmpty(possibleSummonLocations[i][0], possibleSummonLocations[i][1])){
-				maps[currentLevel].summon(possibleSummonLocations[i][0], possibleSummonLocations[i][1], this.creature, this.level);
+				let newSummon = maps[currentLevel].summon(possibleSummonLocations[i][0], possibleSummonLocations[i][1], this.creature, this.level);
+				newSummon.ai = ais.Nearest;
 				return true;
 			}
 		}

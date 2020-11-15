@@ -32,12 +32,16 @@ class Stat {
 
 	onTick(){}
 
+	getEffectiveCap(){
+		return this.cap * (1 + challenges.Respawning.bestFloor / 100);
+	}
+
 	gainXp(amount){
 		if (activeChallenge && activeChallenge.isIllegal(this)) return amount;
 		this.value += amount * this.xpMult;
-		if (this.value > this.cap){
-			let extra = (this.value - this.cap) / this.xpMult;
-			this.value = this.cap;
+		if (this.value > this.getEffectiveCap()){
+			let extra = (this.value - this.getEffectiveCap()) / this.xpMult;
+			this.value = this.getEffectiveCap();
 			return extra;
 		} else if (this.value < 0){
 			let extra = -this.value / this.xpMult;
@@ -201,7 +205,7 @@ class Regeneration extends Stat {
 	}
 
 	onTick(unit){
-		unit.stats.Health.heal(this.value * (1 + 0.05 * challenges.NoRespawn.bestFloor));
+		unit.stats.Health.heal(this.value * (1 + (unit.name == "Adventurer" ? 0.1 * challenges.Restless.bestFloor : 0)));
 	}
 }
 
@@ -246,29 +250,10 @@ class Bleed extends Stat {
 	}
 }
 
-class WoundReflection extends Stat {
-	constructor(value = 1){
-		super("Wound Reflection", value, 0.005, true, 50, "Return a portion of damage taken to the attacker.");
-	}
-
-	onTakeDamage(attackStats){
-		if (!attackStats.attacker) return;
-		let returnAttackStats = {
-			enemy: attackStats.attacker,
-			attacker: null,
-			attacks: 0,
-			hits: 0,
-			damage: attackStats.damage * this.value,
-			bleed: 0,
-		}
-		Object.values(attackStats.enemy.stats).forEach(stat => stat.onTakeDamage(returnAttackStats));
-		attackStats.attacker.stats.Health.takeDamage(returnAttackStats);
-	}
-}
-
 class Mana extends Stat {
 	constructor(value = 0){
-		super("Mana", value, 1, true, 100, "Your ability to cast spells.");
+		super("Mana", value, 1, false, 100, "Your ability to cast spells.");
+		this.current = this.value;
 	}
 
 	heal(amount){
