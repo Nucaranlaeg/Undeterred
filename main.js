@@ -26,7 +26,7 @@ let currentXpPerSecEl = document.querySelector("#current-xp-per-sec");
 let runStart = null;
 let runXp = 0;
 let lagTime = 0;
-let version = "1.1.6";
+let version = "1.1.8";
 document.title = `Undeterred V${version}`;
 // For keeping enemy listings available after run completion
 let oldEnemies = [];

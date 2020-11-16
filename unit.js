@@ -377,7 +377,7 @@ class Unit {
 			this.y = move.y;
 		}
 		if (extraTicks > 0){
-			if (move.type == "move") {
+			if (move.type == "move" && this.playerOwned) {
 				// Explore intermediate spaces if moving multiple times.
 				maps[currentLevel].getVision([this]);
 			}
