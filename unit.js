@@ -377,6 +377,10 @@ class Unit {
 			this.y = move.y;
 		}
 		if (extraTicks > 0){
+			if (move.type == "move") {
+				// Explore intermediate spaces if moving multiple times.
+				maps[currentLevel].getVision([this]);
+			}
 			return this.tick(extraTicks - 1);
 		}
 	}

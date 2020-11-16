@@ -7,6 +7,10 @@ class AI {
 	}
 	
 	move(map, unit){}
+
+	displayHelp(){
+		document.querySelector("#help-detail").innerHTML = this.longDescription;
+	}
 }
 
 class AISimple extends AI {
@@ -154,7 +158,7 @@ class AICoward extends AINearest {
 
 class AISummoner extends AI {
 	constructor(){
-		super("Summoner", "Stays still and summons minions to fight for him.", "");
+		super("Summoner", "Stays still and summons minions to fight for him.", "This AI doesn't explore at all.  Instead, it has the unit stand still and summons minions to fight for him.  It can only be used with Summon spells (and that's not currently unlockable).");
 	}
 	
 	move(map, unit){
@@ -277,3 +281,15 @@ function fillAIDropdown(){
 }
 
 fillAIDropdown();
+
+function showAllAIHelp(){
+	let selector = document.querySelector("#help-selector");
+	while (selector.firstChild){
+		selector.removeChild(selector.lastChild);
+	}
+	for (const [key, value] of Object.entries(ais)){
+		let aiSelect = document.createElement("div");
+		aiSelect.innerHTML = key;
+		aiSelect.onclick = value.displayHelp();
+	}
+}

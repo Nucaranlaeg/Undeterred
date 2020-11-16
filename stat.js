@@ -33,7 +33,8 @@ class Stat {
 	onTick(){}
 
 	getEffectiveCap(){
-		return this.cap * (1 + challenges.Respawning.bestFloor / 100);
+		let base = baseStats[this.getQualifiedName()] || 0;
+		return (this.cap - base) * (1 + challenges.Respawning.bestFloor / 100) + base;
 	}
 
 	gainXp(amount){

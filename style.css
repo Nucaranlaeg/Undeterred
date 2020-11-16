@@ -585,6 +585,15 @@ td.highlight {
 	position: absolute;
 }
 
+#help-tabs {
+	height: 100px;
+}
+
+#help-selector {
+	width: 150px;
+	height: calc(100% - 100px);
+}
+
 /* For setting health bars above units */
 
 [data-health='1%']::before { width: 1%; }

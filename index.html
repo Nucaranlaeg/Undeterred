@@ -150,11 +150,10 @@
 			<div id="help-tabs">
 				<div class="tab">General hints</div>
 				<div class="tab">Bestiary</div>
-				<div class="tab">AIs</div>
+				<div class="tab" onclick="showAllAIHelp() && (document.querySelector('#help-detail').innerHTML = '')">AIs</div>
 			</div>
-			<div id="general-help" class="help-section"></div>
-			<div id="bestiary-help" class="help-section"></div>
-			<div id="ai-help" class="help-section"></div>
+			<div id="help-selector"></div>
+			<div id="help-detail"></div>
 		</div>
 		<div id="tutorial1" class="lightbox" onclick="(this.style.display = 'none') && (document.querySelector('#tutorial2').style.display = 'block')">
 			<div class="tutorial-dialogue" style="top: 50px; left: 50px;">
