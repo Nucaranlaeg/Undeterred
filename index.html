@@ -16,6 +16,10 @@
 					<button class="cap-increase increment-button">+</button>
 				</div>
 			</div>
+			<div id="help-stat-template" class="help-stat">
+				<span class="help-name"></span>
+				<span class="help-value"></span>
+			</div>
 			<div id="condition-template" class="stat condition">
 				<div class="name"></div>
 				<div class="value"></div>
@@ -65,7 +69,7 @@
 			<button id="stop-button" onclick="stopRun()">Exit Dungeon</button>
 			<button id="save-button" onclick="trySave()">Save Game<div class="description">Game saves automatically upon completing a floor.</div></button>
 			<button id="export-button" onclick="openImportExport()">Import/Export</button>
-			<button id="help-button" class="option-button" onclick="showHelp()">Help</button>
+			<button id="help-button" class="option-button" onclick="document.querySelector('#help-box').style.display = 'block'">Help & Info</button>
 			<button id="support-button" class="option-button" onclick="window.open('https:\/\/paypal.me\/SamBenner')">Support Development</button>
 			<button id="discord-button" class="option-button" onclick="window.open('https:\/\/discord.gg\/Wp3AQjpHsT')">Discord</button>
 			<div class="col-header">Messages</div>
@@ -146,14 +150,50 @@
 				</div>
 			</div>
 		</div>
-		<div id="help-box" class="lightbox" onclick="this.style.display = 'none'">
-			<div id="help-tabs">
-				<div class="tab">General hints</div>
-				<div class="tab">Bestiary</div>
-				<div class="tab" onclick="showAllAIHelp() && (document.querySelector('#help-detail').innerHTML = '')">AIs</div>
+		<div id="help-box" class="lightbox" onclick="event.target == this && (this.style.display = 'none')">
+			<div id="help-inner">
+				<div id="help-tabs">
+					<div class="tab" onclick="showHints()">General hints</div>
+					<div class="tab" onclick="showAllCreatureHelp()">Bestiary</div>
+					<div class="tab" onclick="showAllAIHelp()">AIs</div>
+				</div>
+				<div id="help-selector"></div>
+				<div id="help-detail">
+					<div id="help-description"></div>
+					<div id="help-level-wrapper">
+						Level: <input id="help-level" onchange="displayCreatureHelp()" type="number" />
+					</div>
+					<div id="help-stats"></div>
+					<div id="help-compare">
+						<table id="compare-table">
+							<colgroup>
+								<col class="compare-description-col">
+								<col><col><col><col><col>
+								<col class="compare-extra-autobuyer">
+								<col class="compare-extra-autobuyer">
+								<col class="compare-extra-autobuyer">
+							</colgroup>
+							<tr>
+								<th></th>
+								<th class="col-header" colspan="4">Party</th>
+								<th class="col-header" colspan="4">Autobuyer</th>
+							</tr>
+							<tr id="compare-name">
+								<td></td>
+								<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+							</tr>
+							<tr id="compare-hit-chance">
+								<td>Hit Chance</td>
+								<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+							</tr>
+							<tr id="compare-average-dps">
+								<td>Avg Dmg/Tick</td>
+								<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+							</tr>
+						</table>
+					</div>
+				</div>
 			</div>
-			<div id="help-selector"></div>
-			<div id="help-detail"></div>
 		</div>
 		<div id="tutorial1" class="lightbox" onclick="(this.style.display = 'none') && (document.querySelector('#tutorial2').style.display = 'block')">
 			<div class="tutorial-dialogue" style="top: 50px; left: 50px;">

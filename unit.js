@@ -244,7 +244,7 @@ class Unit {
 			}
 			statEl.querySelector(".cap-increase").style.display = this.capBreakers > stat.breaks && stat.capIncrease ? "inline" : "none";
 			statEl.querySelector(".value").innerHTML = formatNumber(stat.isPercent ? stat.value * 100 : stat.value) + (stat.isPercent ? "%" : "");
-			statEl.querySelector(".description").innerHTML = stat.description;
+			statEl.querySelector(".description").innerHTML = stat.getDescription();
 			if (stat.cap !== Infinity && this.playerOwned){
 				statEl.querySelector(".cap").innerHTML = "(" + (stat.isPercent ? formatNumber(stat.getEffectiveCap() * 100) + "%" : formatNumber(stat.getEffectiveCap())) + ")";
 			}

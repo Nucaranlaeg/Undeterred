@@ -275,7 +275,7 @@ const classMapping = {
 *	27	129	1640
 *	28	137	1777
 *	29	145	1922
-*	30	153	2075 (Actually 100 + summons)
+*	30	153	2075 (Actually 140 + summons, which will be more than 153)
 */
 
 maps.push(new Map("Level 1",
@@ -927,7 +927,7 @@ maps.push(new Map("Level 30",
 					 "#12..................R#",
 					 "#34...................#",
 					 "#.._________________..#",
-					 "#.._..............._..#",
+					 "#.._..............R_..#",
 					 "#.._..............._..#",
 					 "#.._...._________.._..#",
 					 "#.._............_.._..#",
@@ -939,7 +939,7 @@ maps.push(new Map("Level 30",
 					 "#.._.._........._.._..#",
 					 "#.._..___________.._..#",
 					 "#.._..............._..#",
-					 "#.._..................#",
+					 "#.._R.................#",
 					 "#.._______________....#",
 					 "#.....................#",
 					 "#R....................#",
@@ -949,10 +949,10 @@ maps.push(new Map("Level 30",
 					"A summoner is a potent threat, much more dangerous than many of the other creatures in these caverns.  Dead now, though.  You might have thought that the necromancer was the creator of these caves, but you see a path leading to deeper, more natural caverns.  You press on, undeterred."));
 
 maps.push(new Map("END",
-					["######",
-					 "#12Gq#",
-					 "#34Gh#",
-					 "######"],
+					["#####",
+					 "#12q#",
+					 "#34h#",
+					 "#####"],
 					3,
 					"",
 					""));

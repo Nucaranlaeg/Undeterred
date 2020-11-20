@@ -248,7 +248,7 @@ td::after {
 	font-size: 16px;
 }
 
-td:hover::after {
+#map td:hover::after {
 	display: block;
 }
 
@@ -505,6 +505,7 @@ td.highlight {
 	left: 0;
 	right: 0;
 	background-color: #44444444;
+	z-index: 100;
 }
 
 #challenge-confirm-text,
@@ -591,7 +592,118 @@ td.highlight {
 
 #help-selector {
 	width: 150px;
-	height: calc(100% - 100px);
+	height: calc(100% - 50px);
+	display: inline-block;
+	vertical-align: top;
+	overflow-y: auto;
+}
+
+#help-detail {
+	display: inline-block;
+	width: calc(100% - 175px);
+	max-height: calc(100% - 50px);
+	padding: 10px;
+	overflow-y: auto;
+}
+
+#help-description {
+	height: 50px;
+}
+
+#help-level-wrapper {
+	display: none;
+}
+
+#help-level {
+	background-color: #ccc;
+	width: 50px;
+	height: 14px;
+	margin-bottom: 2px;
+}
+
+#help-stats {
+	display: inline-block;
+	width: 160px;
+	vertical-align: top;
+}
+
+.help-stat {
+	width: calc(100% - 8px);
+	padding: 2px 4px;
+}
+
+.help-stat:nth-of-type(2n + 1) {
+	background-color: #555555;
+}
+
+.help-value {
+	float: right;
+}
+
+.help-item {
+	text-align: center;
+	padding: 3px 0;
+	border: 1px solid #888888;
+}
+
+.help-item.active {
+	background-color: #666666;
+}
+
+#help-compare {
+	display: none;
+	vertical-align: top;
+}
+
+#compare-table col {
+	width: 50px;
+}
+
+#compare-table .compare-description-col {
+	width: 100px;
+}
+
+#compare-table td {
+	border-bottom: 1px solid #333333;
+	padding: 2px 0;
+}
+
+#help-inner {
+	width: 860px;
+	height: 400px;
+	position: absolute;
+	background-color: #222222;
+	top: calc(50% - 200px);
+	left: calc(50% - 430px);
+	border-radius: 10px;
+}
+
+#help-tabs {
+	width: 100%;
+	height: 30px;
+	display: flex;
+	flex-direction: row;
+	border-top-right-radius: 10px;
+}
+
+.tab:first-of-type {
+	border-top-left-radius: 10px;
+}
+
+.tab:last-of-type {
+	border-top-right-radius: 10px;
+}
+
+.tab {
+	padding: 10px;
+	line-height: 10px;
+	border: 1px solid white;
+	flex: 1;
+	text-align: center;
+}
+
+.tab.active {
+	background-color: #666666;
 }
 
 /* For setting health bars above units */

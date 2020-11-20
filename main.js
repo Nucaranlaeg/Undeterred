@@ -54,7 +54,7 @@ function beginRun(){
 			removedUnit = playerUnits.find(unit => unit.active && unit.getStatValue() == minTotalXP);
 		} else {
 			displayMessage("You must remove a unit from your party to enter the caverns again - you can only have 3 old units in your party.")
-			displayHelpMessage("RemoveUnitsFromParty");
+			displayHelpMessage("Remove Units");
 			return;
 		}
 		if (removedUnit) {

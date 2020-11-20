@@ -1,21 +1,24 @@
 class AI {
-	constructor(name, description, longDescription, locked = true){
+	constructor(name, description, longDescription, viewLevel, locked = true){
 		this.name = name;
 		this.description = description;
 		this.longDescription = longDescription;
+		this.viewLevel = viewLevel;
 		this.locked = locked;
 	}
 	
 	move(map, unit){}
 
-	displayHelp(){
-		document.querySelector("#help-detail").innerHTML = this.longDescription;
+	displayHelp(el){
+		document.querySelectorAll(".help-item.active").forEach(el => el.classList.remove("active"));
+		el.classList.add("active");
+		document.querySelector("#help-description").innerHTML = this.longDescription;
 	}
 }
 
 class AISimple extends AI {
 	constructor(){
-		super("Simple", "Moves toward the nearest accessible enemy or the nearest unexplored area.", "First, attacks any enemy within range.  Second, attempts to move toward the nearest enemy with a clear path.  Third, attempts to move toward the nearest unexplored area with a clear path.  If a clear path is not found to either, this AI causes the unit to stays still.  It can be useful when finding more enemies causes the party to be overwhelmed.", false);
+		super("Simple", "Moves toward the nearest accessible enemy or the nearest unexplored area.", "First, attacks any enemy within range.  Second, attempts to move toward the nearest enemy with a clear path.  Third, attempts to move toward the nearest unexplored area with a clear path.  If a clear path is not found to either, this AI causes the unit to stays still.  It can be useful when finding more enemies causes the party to be overwhelmed.", 1, false);
 	}
 	
 	move(map, unit){
@@ -68,7 +71,7 @@ class AISimple extends AI {
 
 class AINearest extends AI {
 	constructor(){
-		super("Nearest", "Moves toward the nearest enemy or unexplored space.", "First, attacks any enemy within range.  Second, attempts to move toward the nearest enemy or unexplored space with a clear path to it.  Third, attempts to move toward the nearest enemy.  This AI can be useful when the party tends to get overwhelmed moving through chokepoints, or just to clear faster in general.");
+		super("Nearest", "Moves toward the nearest enemy or unexplored space.", "First, attacks any enemy within range.  Second, attempts to move toward the nearest enemy or unexplored space with a clear path to it.  Third, attempts to move toward the nearest enemy.  This AI can be useful when the party tends to get overwhelmed moving through chokepoints, or just to clear faster in general.", 11);
 	}
 	
 	move(map, unit){
@@ -108,9 +111,9 @@ class AINearest extends AI {
 	}
 }
 
-class AICoward extends AINearest {
+class AICoward extends AI {
 	constructor(){
-		super("Coward", "Flees enemies when low on health with positive regen.", "This AI is an extension of Nearest.  If below 100% Health, there is a chance that this AI will direct the unit to move away from the nearest enemy, scaling up to 100% chance at 25% Health.  If the unit using Coward is not regenerating Health, it will never flee.");
+		super("Coward", "Flees enemies when low on health with positive regen.", "This AI is an extension of Nearest.  If below 100% Health, there is a chance that this AI will direct the unit to move away from the nearest enemy, scaling up to 100% chance at 25% Health.  If the unit using Coward is not regenerating Health, it will never flee.", 26);
 	}
 	
 	move(map, unit){
@@ -120,7 +123,7 @@ class AICoward extends AINearest {
 		if (unit.stats.Regeneration.value <= unit.conditions.Bleeding.value){
 			isFleeing = false;
 		}
-		if (!isFleeing) return super.move(map, unit);
+		if (!isFleeing) return ais.Nearest.move(map, unit);
 		let targetUnits = [];
 		if (unit.playerOwned){
 			targetUnits = map.getVisibleEnemies();
@@ -132,7 +135,7 @@ class AICoward extends AINearest {
 				return {};
 			}
 		}
-		if (targetUnits.length == 0) return super.move(map, unit);
+		if (targetUnits.length == 0) return ais.Nearest.move(map, unit);
 		let possibleMoves = [
 			[unit.x - 1, unit.y],
 			[unit.x + 1, unit.y],
@@ -158,7 +161,7 @@ class AICoward extends AINearest {
 
 class AISummoner extends AI {
 	constructor(){
-		super("Summoner", "Stays still and summons minions to fight for him.", "This AI doesn't explore at all.  Instead, it has the unit stand still and summons minions to fight for him.  It can only be used with Summon spells (and that's not currently unlockable).");
+		super("Summoner", "Stays still and summons minions to fight for him.", "This AI doesn't explore at all.  Instead, it has the unit stand still and summons minions to fight for him.  It can only be used with Summon spells (and that's not currently unlockable).", 30);
 	}
 	
 	move(map, unit){
@@ -283,13 +286,14 @@ function fillAIDropdown(){
 fillAIDropdown();
 
 function showAllAIHelp(){
+	helpClear();
 	let selector = document.querySelector("#help-selector");
-	while (selector.firstChild){
-		selector.removeChild(selector.lastChild);
-	}
 	for (const [key, value] of Object.entries(ais)){
 		let aiSelect = document.createElement("div");
+		if (bestLevel + 1 < value.viewLevel) continue;
+		aiSelect.classList.add("help-item");
 		aiSelect.innerHTML = key;
-		aiSelect.onclick = value.displayHelp();
+		aiSelect.onclick = value.displayHelp.bind(value, aiSelect);
+		selector.appendChild(aiSelect);
 	}
 }

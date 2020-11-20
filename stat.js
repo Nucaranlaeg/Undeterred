@@ -77,6 +77,10 @@ class Stat {
 	getQualifiedName(){
 		return this.name.replace(/[- ]/g, "");
 	}
+
+	getDescription(){
+		return this.description;
+	}
 }
 
 class Multiattack extends Stat {
@@ -122,7 +126,7 @@ class Damage extends Stat {
 
 class CriticalHit extends Stat {
 	constructor(value = 0){
-		super("Critical Hit", value, 0.0075, true, 100, "Increases your chance to score a critical hit (initially 2x damage).  Max chance 75%.  Once past 75%, provides a chance to score a critical hit a third (fourth, etc.) time.  Multiple critical hits multiply each other.");
+		super("Critical Hit", value, 0.0075, true, 100, "Increases your chance to score a critical hit (initially 2x damage).  Max chance 75%.  Once past 75%, provides a chance to score a critical hit a second (third, etc.) time.  Multiple critical hits multiply each other.");
 	}
 
 	onHit(attackStats){
@@ -212,6 +216,10 @@ class Regeneration extends Stat {
 	onTick(unit){
 		unit.stats.Health.heal(this.value * (1 + (unit.name == "Adventurer" ? 0.1 * challenges.Restless.bestFloor : 0)));
 	}
+
+	getDescription(){
+		return `Each tick, regain this much health.  Current tick time: ${formatNumber(tickTime)}ms.  Current regeneration: ${formatNumber(this.value / tickTime * 1000)} Health/s (doesn't account for bonuses - future work)`;
+	}
 }
 
 class Vampirism extends Stat {
@@ -252,6 +260,10 @@ class Bleed extends Stat {
 
 	onTakeDamage(attackStats){
 		attackStats.enemy.conditions.Bleeding.increase(attackStats.bleed);
+	}
+
+	getDescription(){
+		return `Attacks deal this much damage per tick for the rest of the level.  Current tick time: ${formatNumber(tickTime)}ms.  Current bleed per hit: ${formatNumber(this.value / tickTime * 1000)} Health/s`;
 	}
 }
 

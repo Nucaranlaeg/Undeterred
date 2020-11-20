@@ -147,6 +147,11 @@ function load(){
 	});
 	unlockedRoles = saveGame.unlockedRoles;
 
+	Object.values(challenges).forEach(challenge => {
+		challenge.locked = true;
+		challenge.bestFloor = 0;
+	});
+
 	saveGame.challenges.forEach(challengeData => {
 		let challenge = challenges[challengeData.name];
 		if (!challenge) return;
@@ -180,9 +185,9 @@ function load(){
 	let loadFloor = +localStorage.loadFloor;
 	if (loadFloor == currentLevel){
 		localStorage.loads = loads + 1;
-		if (loads >= 3){
+		if (loads >= 3 && localStorage.debug !== "testing"){
 			currentLevel = 0;
-			displayHelpMessage("loadRepeatStop");
+			displayHelpMessage("Max Loads");
 		}
 	} else {
 		localStorage.loads = 1;
