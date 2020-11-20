@@ -64,7 +64,11 @@ class Stat {
 	}
 
 	decreaseCap(){
-		if (this.cap == Infinity || this.capIncrease == 0 || this.breaks == 0) return false;
+		if (this.cap == Infinity || this.capIncrease == 0 || this.breaks == 0){
+			// Ensure it's not lower than it's supposed to be.
+			this.cap = baseStats[this.getQualifiedName()] + this.capIncrease * 2;
+			return false;
+		}
 		this.cap -= this.capIncrease;
 		this.breaks--;
 		return true;
