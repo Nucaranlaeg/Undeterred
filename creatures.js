@@ -140,13 +140,72 @@ let creatures = {
 		Damage: 1000,
 		ToHit: 50,
 		Dodge: 50,
-		Mana: 20,
+		Mana: 100,
 		ManaRegeneration: 5,
 		xp: 60,
 		spell: new Summon("z", 10, 20),
 		ai: "Summoner",
 		base_level: -28,
 		viewLevel: 30,
+	},
+	"c": {
+		name: "Cultist",
+		description: "A man (or woman, it's hard to tell) dressed in stereotypical black robes and chanting spells.",
+		Health: 50000,
+		Damage: 250,
+		ToHit: 20,
+		Dodge: 90,
+		Mana: 50,
+		ManaRegeneration: 1,
+		xp: 10,
+		spell: new Heal(),
+		ai: "Summoner",
+		base_level: -28,
+		viewLevel: 31,
+	},
+	"I": {
+		name: "Ice Statue",
+		description: "Well, you wish it were merely a statue.  It's made of ice, and it keeps reminding you of that fact by throwing parts of itself at you.",
+		Health: 2400,
+		Damage: 100,
+		ToHit: 200,
+		Dodge: 5,
+		Protection: 80,
+		Block: 20,
+		Range: 2,
+		Freezing: 1,
+		xp: 5,
+		ai: "Archer",
+		base_level: -28,
+		viewLevel: 31,
+	},
+	"C": {
+		name: "Dark Cultist",
+		description: "A man (or woman, it's hard to tell) dressed in stereotypical black robes and chanting spells to reduce the efficacy of your Bleed.",
+		Health: 50000,
+		Damage: 250,
+		ToHit: 20,
+		Dodge: 90,
+		Mana: 50,
+		ManaRegeneration: 1,
+		xp: 10,
+		spell: new Cleanse(),
+		ai: "Summoner",
+		base_level: -28,
+		viewLevel: 31,
+	},
+	"W": {
+		name: "Wall Beast",
+		description: "A stone wall, perhaps.  It's animated by strange magic.  It doesn't hit you often, but when it does...",
+		Health: 25000,
+		Damage: 2500,
+		ToHit: 0,
+		Dodge: 0,
+		Protection: 125,
+		xp: 25,
+		ai: "Simple",
+		base_level: -28,
+		viewLevel: 33,
 	},
 }
 
@@ -176,7 +235,7 @@ function displayCreatureHelp(creature, el){
 		document.querySelector("#help-compare").style.display = "inline-block";
 	}
 	displayLevel.value = Math.max(displayLevel.value, displayedCreature.viewLevel)
-	let effectiveLevel = Math.min((displayedCreature.base_level + +displayLevel.value), (displayedCreature.base_level + +displayLevel.value + (displayedCreature.level_softcap || Infinity)) / 2)
+	let effectiveLevel = Math.min((displayedCreature.base_level + +displayLevel.value - 1), (displayedCreature.base_level + +displayLevel.value - 1 + (displayedCreature.level_softcap || Infinity)) / 2)
 	let statsEl = document.querySelector("#help-stats");
 	while (statsEl.firstChild){
 		statsEl.removeChild(statsEl.lastChild);
@@ -212,21 +271,22 @@ function displayCreatureHelp(creature, el){
 			let damageByNumCrits = [];
 			for (let i = 0; i <= maxCrits; i++){
 				let critDamage = damage * (unit.stats.CriticalDamage.value ** i);
-				critDamage *= 100 / ((displayedCreature.Protection || 0) + 100);
-				critDamage = Math.max(0, critDamage - (displayedCreature.Block || 0));
+				critDamage *= 100 / ((displayedCreature.Protection || 0) * effectiveLevel + 100);
+				critDamage = Math.max(0, critDamage - (displayedCreature.Block || 0) * effectiveLevel);
 				damageByNumCrits[i] = critDamage;
 			}
 			let chance = 1;
 			let totalDamage = 0;
 			let currentCritChance = unit.stats.CriticalHit.value;
 			let i = 0;
-			while (currentCritChance > 0){
+			while (currentCritChance >= 0){
 				let hitChance = Math.min(unit.stats.CriticalHit.value, 0.75);
 				totalDamage += damageByNumCrits[i] * chance * (1 - hitChance);
 				chance *= hitChance;
 				currentCritChance -= 0.75;
 				i++;
 			}
+			totalDamage *= 1 + unit.stats.Haste.value;
 			return totalDamage;
 		}
 		document.querySelector(`#compare-average-dps td:nth-of-type(${nextUnit})`).innerHTML = formatNumber(getAvgDamage());

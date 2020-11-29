@@ -1,4 +1,5 @@
 let playerSymbols = ["&nbsp;♥", "&nbsp;♦", "&nbsp;♣", "&nbsp;♠"];
+let playerPosIndex = [1,2,3,0];
 let playerUnits = [];
 let currentLevel = 0;
 let maxUnits = 10;
@@ -26,7 +27,7 @@ let currentXpPerSecEl = document.querySelector("#current-xp-per-sec");
 let runStart = null;
 let runXp = 0;
 let lagTime = 0;
-let version = "1.1.9";
+let version = "1.2.0";
 document.title = `Undeterred V${version}`;
 // For keeping enemy listings available after run completion
 let oldEnemies = [];
@@ -58,8 +59,10 @@ function beginRun(){
 			return;
 		}
 		if (removedUnit) {
+			let position = playerUnits.filter(unit => unit.active).findIndex(unit => unit == removedUnit);
 			removedUnit.active = false;
 			lastUnitRole = removedUnit.role;
+			playerPosIndex = [...playerPosIndex.slice(0, position), ...playerPosIndex.slice(position + 1), playerPosIndex[position]];
 		}
 		partyUnits = playerUnits.filter(unit => unit.active);
 	}
@@ -89,15 +92,11 @@ function beginRun(){
 	document.querySelector("#start-button").classList.add("running");
 	loopCount++;
 	let newPlayerUnit = new Unit(true, "Adventurer", baseStats, autobuyerUnits[lastUnitRole].ai.name, true, loopCount, lastUnitRole);
-	newPlayerUnit.character = playerSymbols[0];
+	newPlayerUnit.spell = autobuyerUnits[newPlayerUnit.role].spell ? new spells[autobuyerUnits[newPlayerUnit.role].spell.name]() : null;
 	playerUnits.push(newPlayerUnit);
 	partyUnits = playerUnits.filter(unit => unit.active);
 	resetHealth(partyUnits);
-	partyUnits.forEach((unit, i) => {
-		unit.character = playerSymbols[(i+1) % 4];
-	})
 	displaySelectedUnit();
-	displayAllUnits();
 	currentLevel = 0;
 	loadNextMap();
 	tickInterval = setInterval(runTick, tickTime);
@@ -106,7 +105,11 @@ function beginRun(){
 function loadNextMap(){
 	oldEnemies.forEach(e => e.removeSummary());
 	oldEnemies = [];
-	let partyUnits = playerUnits.filter(unit => unit.active).reverse();
+	let partyUnits = playerUnits.filter(unit => unit.active);
+	partyUnits.forEach((unit, i) => {
+		unit.character = playerSymbols[playerPosIndex[i % 4]];
+	});
+	displayAllUnits();
 	// On moving to the next level, all player units come back to life
 	// Unless in the Restless challenge.
 	if (!activeChallenge || activeChallenge.name != "Restless"){
@@ -159,6 +162,10 @@ function displayEnemyUnits(){
 }
 
 function displayAllUnits(){
+	let partyUnits = playerUnits.filter(unit => unit.active);
+	partyUnits.forEach((unit, i) => {
+		unit.character = playerSymbols[playerPosIndex[i % 4]];
+	});
 	let partyFull = playerUnits.reduce((a, unit) => unit.active + a, 0) == 4;
 	let partyDiv = document.querySelector("#party");
 	let otherAdventurersDiv = document.querySelector("#other-adventurers");
@@ -218,6 +225,30 @@ function displayAllUnits(){
 			}
 		}
 		if (unit.active){
+			unitEl.style.order = playerSymbols.findIndex(char => char == unit.character);
+			unitEl.draggable = true;
+			unitEl.addEventListener("dragstart", event => {
+				let oldUnit = document.querySelector("#drag-unit");
+				if (oldUnit) oldUnit.removeAttribute("id");
+				unitEl.id = "drag-unit";
+				event.dataTransfer.setData("text/plain", unitEl.style.order);
+			});
+			unitEl.addEventListener("dragover", (event) => {
+				event.preventDefault();
+				event.dataTransfer.dropEffect = "move";
+			});
+			unitEl.addEventListener("drop", event => {
+				event.preventDefault();
+				let switch1 = +unitEl.style.order;
+				let switch2 = +event.dataTransfer.getData("text/plain");
+				try {
+					document.querySelector("#drag-unit").style.order = switch1;
+				} catch {
+					return;
+				}
+				playerPosIndex = playerPosIndex.map(x => x == switch1 ? switch2 : x == switch2 ? switch1 : x);
+				unitEl.style.order = switch2;
+			});
 			partyDiv.append(unitEl);
 		} else {
 			otherAdventurersDiv.append(unitEl);
@@ -228,8 +259,20 @@ function displayAllUnits(){
 function applyReward(reward){
 	if ((new Unit(false, "", {})).stats[reward] !== undefined){
 		// Check if the reward is a stat.
-		baseStats[reward] = reward == "CriticalDamage" ? 2 : 0;
+		if (reward == "CriticalDamage"){
+			baseStats[reward] = 2;
+		} else if (reward == "Mana"){
+			baseStats[reward] = 100;
+			autobuyerUnits.forEach(unit => {
+				if (unit.stats.Mana.value == 0) unit.stats.Mana.addBase(100);
+			});
+		} else {
+			baseStats[reward] = 0;
+		}
 		displayMessage(`You have learned the ${reward} skill!`);
+		if (bestLevel > 30){
+			applyReward("Autobuyer " + reward);
+		}
 	} else if (lockedSettings[reward]) {
 		// Check if reward is a setting.
 		lockedSettings[reward] = false;
@@ -247,6 +290,9 @@ function applyReward(reward){
 	} else if (reward == "Roles") {
 		unlockedRoles = true;
 		displayMessage(`You can now assign party roles and have 4 distinct autobuyers!`);
+	} else if (reward == "BuyCapbuyers") {
+		unlockedCapbuyerbuyer = true;
+		displayMessage(`You can now spend xp to buy more capbuyers! (NOT IMPLEMENTED)`);
 	} else if (reward.split(" ")[0] == "Autobuyer") {
 		let stat = reward.split(" ")[1];
 		displayMessage(`You have unlocked the Autobuyer for ${stat}!`);
@@ -271,6 +317,12 @@ function applyReward(reward){
 		ais[ai].locked = false;
 		displaySelectedUnitStatus();
 		fillAIDropdown();
+	} else if (reward.split(" ")[0] == "Spell") {
+		let spell = reward.split(" ")[1];
+		displayMessage(`You have unlocked the ${spell} spell!`);
+		lockedSpells[spell] = false;
+		displaySelectedUnitStatus();
+		fillSpellDropdown();
 	}
 }
 
@@ -328,7 +380,6 @@ function grantXp(xp){
 function stopRun(){
 	document.querySelector("#start-button").classList.remove("running");
 	maps[currentLevel].uninstantiate();
-	playerUnits.forEach(unit => unit.character = "");
 	let currentUnit = playerUnits.find(unit => unit.current);
 	if (currentUnit) {
 		currentUnit.current = false;
@@ -338,6 +389,7 @@ function stopRun(){
 	clearInterval(tickInterval);
 	tickInterval = null;
 	displayAllUnits();
+	playerUnits.forEach(unit => unit.character = "");
 	save();
 }
 

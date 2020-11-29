@@ -56,6 +56,7 @@ class AutobuyerUnit extends Unit {
 		maps[currentLevel].noHighlight();
 		unitElWrapper.querySelector("#offline-xp-button").style.display = "none";
 		unitElWrapper.querySelector(".role-wrapper").style.display = unlockedRoles ? "block" : "none";
+		unitElWrapper.querySelector(".spell-wrapper").style.display = unlockedRoles ? "block" : "none";
 	}
 
 	unlock(stat){
@@ -74,7 +75,11 @@ function clearAutobuy(){
 		for (let [key, value] of Object.entries(baseStats)){
 			if (!autobuyer.stats[key]) continue; // What?  But this way is safer.
 			if (key == "CriticalDamage" && value < 2) value = 2;
+			if (key == "Mana" && value < 100) value = 100;
 			autobuyer.stats[key].value = value;
+			while (autobuyer.stats[key].breaks){
+				autobuyer.unBreakCap(key);
+			}
 		}
 	});
 }

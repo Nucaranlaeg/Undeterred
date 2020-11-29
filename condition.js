@@ -49,3 +49,27 @@ class Bleeding extends Condition {
 		this.value *= 0.75;
 	}
 }
+
+class Slowed extends Condition {
+	constructor(){
+		super("Slowed", "This unit gains a 1% chance per point (multiplicative) to miss its turn.  Slowly dissipates.");
+	}
+
+	missTurn(){
+		if (Math.random() > (0.99 ** this.value)){
+			this.value *= 0.95;
+			this.value = Math.floor(this.value * 100) / 100;
+			return true;
+		}
+		return false;
+	}
+
+	isOverCleanseThreshold(unit){
+		return this.value > 50 * (2 ** (unit.stats.Haste.value + 1));
+	}
+
+	cleanse(){
+		this.value *= 0.25;
+		this.value = Math.floor(this.value * 100) / 100;
+	}
+}

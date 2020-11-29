@@ -288,6 +288,20 @@ class ManaRegeneration extends Stat {
 	}
 }
 
+class Freezing extends Stat {
+	constructor(value = 0){
+		super("Freezing", value, 0.01, false, 100, "Applies the Slowed condition, which can cause the target to miss its turn.");
+	}
+
+	onHit(attackStats){
+		attackStats.freeze = this.value * attackStats.hits;
+	}
+
+	onTakeDamage(attackStats){
+		attackStats.enemy.conditions.Slowed.increase(attackStats.freeze);
+	}
+}
+
 function getOccurrences(value){
 	let occurances = 0;
 	while (value > 0){

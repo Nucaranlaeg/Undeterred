@@ -143,12 +143,17 @@ body * {
 	display: block;
 }
 
-.Health .current {
+.Health .current,
+.Mana .current {
 	position: absolute;
 	top: 0;
 	right: 0;
 	bottom: 50%;
 	background-color: #ff000060;
+}
+
+.Mana .current {
+	background-color: #0000ff60;
 }
 
 .col-header {
@@ -162,7 +167,7 @@ body * {
 
 .char-info {
 	padding: 5px;
-	height: 71px;
+	height: 90px;
 }
 
 .char-info div {
@@ -309,16 +314,16 @@ td.not-visible {
 
 #party {
 	text-align: initial;
+	display: flex;
+	flex-wrap: wrap;
 }
 
 #party .unit-summary {
-	width: calc(50% - 11px);
+	width: calc(50% - 12px);
 	display: inline-block;
 	border-top: 2px solid #666666;
-}
-
-#party .unit-summary:nth-of-type(2n) {
-	border-left: 2px solid #666666;
+	border-left: 1px solid #666666;
+	border-right: 1px solid #666666;
 }
 
 .unit-summary.active {
@@ -575,7 +580,11 @@ td.highlight {
 	background-color: #404040;
 }
 
-.role-wrapper {
+option:disabled:not(:checked) {
+	display: none;
+}
+
+.dropdown-wrapper {
 	display: none;
 }
 

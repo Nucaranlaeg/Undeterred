@@ -13,6 +13,7 @@ function save(){
 		currentLevel,
 		bestLevel,
 		offlineData,
+		playerPosIndex,
 		units: playerUnits.map(unit => {
 			return {
 				stats: Object.values(unit.stats).filter(stat => !stat.locked).map(stat => {
@@ -39,6 +40,7 @@ function save(){
 				ai: unit.ai.name,
 				preventRemoval: unit.preventRemoval,
 				role: unit.role,
+				spell: unit.spell ? unit.spell.name : "",
 			};
 		}),
 		autobuy: autobuyerUnits.map(autobuyer => {
@@ -53,6 +55,7 @@ function save(){
 				}),
 				capBreakersUsed: autobuyer.capBreakersUsed,
 				ai: autobuyer.ai.name,
+				spell: autobuyer.spell ? autobuyer.spell.name : "",
 			};
 		}),
 		unlockedRoles,
@@ -76,6 +79,7 @@ function save(){
 				conquered: map.conquered,
 			};
 		}),
+		lockedSpells: Object.entries(lockedSpells).filter(s => !s[1]).map(s => s[0]),
 	}
 	localStorage.save = btoa(JSON.stringify(saveGame));
 }
@@ -98,6 +102,7 @@ function load(){
 	tickTime = saveGame.tickTime;
 	currentLevel = saveGame.currentLevel;
 	bestLevel = saveGame.bestLevel;
+	playerPosIndex = saveGame.playerPosIndex || [1,2,3,0];
 	offlineData = saveGame.offlineData;
 	offlineData.offlineTime += Date.now() - offlineData.lastTickTime - tickTime;
 	offlineData.lastTickTime = Date.now();
@@ -120,6 +125,7 @@ function load(){
 		unit.deathXp = unitData.deathXp;
 		unit.preventRemoval = unitData.preventRemoval;
 		unit.role = unitData.role;
+		unit.spell = unitData.spell ? new spells[unitData.spell]() : null;
 		if (activeChallenge && activeChallenge.name == "Restless") {
 			unit.stats.Health.current = unitData.stats.find(s => s.name == "Health").current;
 			unitData.conditions.forEach(condition => {
@@ -144,6 +150,7 @@ function load(){
 		});
 		autobuyerUnits[index].capBreakersUsed = autobuyer.capBreakersUsed;
 		autobuyerUnits[index].ai = ais[autobuyer.ai];
+		autobuyerUnits[index].spell = autobuyer.spell ? new spells[autobuyer.spell]() : null;
 	});
 	unlockedRoles = saveGame.unlockedRoles;
 
@@ -162,20 +169,14 @@ function load(){
 		ais[saveAi.name].locked = saveAi.locked;
 	});
 	fillAIDropdown();
+
+	saveGame.lockedSpells.forEach(spell => {
+		lockedSpells[spell] = false;
+	});
+	fillSpellDropdown();
 	for (let i = 0; i < maps.length && i < saveGame.maps.length; i++){
 		maps[i].deaths = saveGame.maps[i].deaths;
 		maps[i].conquered = saveGame.maps[i].conquered;
-	}
-	
-	// Do version-specific stuff
-	if (!saveGame.version || saveGame.version < "1.0.3"){
-		bestLevel = 0;
-		for (let i = 0; i < maps.length && i < saveGame.maps.length; i++){
-			if (maps[i].reward != "FasterTicks"){
-				maps[i].conquered = false;
-			}
-		}
-		document.querySelector("#tutorial1").style.display = "block";
 	}
 	
 	displaySettings();
@@ -195,10 +196,6 @@ function load(){
 	}
 	// Do setup
 	if (currentLevel > 0){
-		partyUnits = playerUnits.filter(unit => unit.active);
-		partyUnits.forEach((unit, i) => {
-			unit.character = playerSymbols[(i+1) % 4];
-		})
 		loadNextMap();
 		tickInterval = setInterval(runTick, tickTime);
 	}

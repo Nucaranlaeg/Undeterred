@@ -105,12 +105,16 @@
 				XP:<button id="offline-xp-button" class="increment-button">+<div class="offline-xp-button-desc description"></div></button><div class="xp-amount"></div><br>
 				<span class="cap-breaker"><div class="cap-breaker-desc description">Use these to increase the cap on some stats</div>Cap Breakers:</span><div class="cap-breakers"></div><br>
 				AI:<select class="ai"></select><br>
-				<span class="role-wrapper">
+				<span class="role-wrapper dropdown-wrapper">
 					Role:<select class="role">
 						<option value="0">Primary</option>
 						<option value="1">Secondary</option>
 						<option value="2">Tertiary</option>
 						<option value="3">Quaternary</option>
+					</select>
+				</span>
+				<span class="spell-wrapper dropdown-wrapper">
+					Spell:<select class="spell">
 					</select>
 				</span>
 			</div>
@@ -156,6 +160,7 @@
 					<div class="tab" onclick="showHints()">General hints</div>
 					<div class="tab" onclick="showAllCreatureHelp()">Bestiary</div>
 					<div class="tab" onclick="showAllAIHelp()">AIs</div>
+					<div class="tab" onclick="showAllSpellHelp()">Spells</div>
 				</div>
 				<div id="help-selector"></div>
 				<div id="help-detail">

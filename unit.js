@@ -35,6 +35,7 @@ class Unit {
 			// Non-Combat
 			Regeneration: new Regeneration(0),
 			Haste: new Haste(0),
+			Freezing: new Freezing(0),
 		};
 		let extraLevels = 0;
 		if (activeChallenge && activeChallenge.name == "Plus Two Levels" && name != "Adventurer"){
@@ -58,6 +59,10 @@ class Unit {
 			this.stats.Regeneration.unlock();
 			this.stats.Regeneration.value += this.stats.Health.value;
 			this.stats.Health.value *= 10;
+		}
+		if (activeChallenge && activeChallenge.name == "Quickly" && name != "Adventurer"){
+			this.stats.Haste.unlock();
+			this.stats.Haste.value += 15;
 		}
 		// Number of times this unit's caps can be increased.
 		this.capBreakers = 0;
@@ -83,6 +88,7 @@ class Unit {
 		// The conditions which can be applied to this unit
 		this.conditions = {
 			Bleeding: new Bleeding(),
+			Slowed: new Slowed(),
 		};
 		// For checking that this is not an autobuyer.
 		this.isAutobuyer = false;
@@ -92,7 +98,7 @@ class Unit {
 		this.level = stats.level;
 	}
 	
-	attack(enemy){
+	attack(enemy, autoHit = false){
 		let attackStats = {
 			enemy: enemy,
 			attacker: this,
@@ -102,6 +108,12 @@ class Unit {
 			bleed: 0,
 		}
 		this.stats.Multiattack.onBeginAttack(attackStats);
+		if (autoHit) {
+			attackStats.attacks = 0;
+			attackStats.hits = 1;
+		} else if (this.playerOwned && activeChallenge && activeChallenge.name == "Magical"){
+			return;
+		}
 		Object.values(this.stats).forEach(s => s.onAttack(attackStats));
 		if (attackStats.hits == 0) return 0;
 		Object.values(this.stats).forEach(s => s.onHit(attackStats));
@@ -188,6 +200,10 @@ class Unit {
 		this.role = event.target.value;
 	}
 	
+	changeSpell(event){
+		this.spell = new spells[event.target.value]();
+	}
+	
 	display(){
 		let statTemplate = document.querySelector("#stat-template");
 		let unitElWrapper = document.querySelector("#unit-wrapper");
@@ -205,6 +221,8 @@ class Unit {
 		};
 		unitElWrapper.querySelector(".role").onchange = this.changeRole.bind(this);
 		unitElWrapper.querySelector(".role").value = this.role;
+		unitElWrapper.querySelector(".spell").onchange = this.changeSpell.bind(this);
+		unitElWrapper.querySelector(".spell").value = this.spell ? this.spell.name : "";
 		unitElWrapper.querySelector(".removal").innerHTML = this.preventRemoval ? "Cannot be deleted" : "Can be deleted";
 		unitElWrapper.querySelector(".removal").onclick = e => {
 			e.stopPropagation();
@@ -236,17 +254,17 @@ class Unit {
 					};
 				}
 				statEl.onclick = this.spendXp.bind(this, stat.getQualifiedName());
-				if (stat.name == "Health"){
+				if (stat.name == "Health" || stat.name == "Mana"){
 					let current = document.createElement("div");
 					statEl.append(current);
 					current.classList.add("current");
 				}
 			}
 			statEl.querySelector(".cap-increase").style.display = this.capBreakers > stat.breaks && stat.capIncrease ? "inline" : "none";
-			statEl.querySelector(".value").innerHTML = formatNumber(stat.isPercent ? stat.value * 100 : stat.value) + (stat.isPercent ? "%" : "");
+			statEl.querySelector(".value").innerHTML = formatNumber(stat.isPercent ? stat.value * 100 : stat.value, stat.name == "Mana Regeneration" ? 2 : 0) + (stat.isPercent ? "%" : "");
 			statEl.querySelector(".description").innerHTML = stat.getDescription();
 			if (stat.cap !== Infinity && this.playerOwned){
-				statEl.querySelector(".cap").innerHTML = "(" + (stat.isPercent ? formatNumber(stat.getEffectiveCap() * 100) + "%" : formatNumber(stat.getEffectiveCap())) + ")";
+				statEl.querySelector(".cap").innerHTML = "(" + (stat.isPercent ? formatNumber(stat.getEffectiveCap() * 100, stat.name == "Mana Regeneration" ? 2 : 0) + "%" : formatNumber(stat.getEffectiveCap(), stat.name == "Mana Regeneration" ? 2 : 0)) + ")";
 			}
 			if (activeChallenge && activeChallenge.isIllegal(stat)) statEl.classList.add("disabled");
 		});
@@ -259,6 +277,15 @@ class Unit {
 		unitElWrapper.querySelector(".cap-breakers").innerHTML = this.capBreakers;
 		unitElWrapper.querySelector(".ai").value = this.ai.name;
 		unitElWrapper.querySelector(".role-wrapper").style.display = (this.name == "Adventurer" || this.isAutobuyer) && unlockedRoles ? "block" : "none";
+		if ((this.name == "Adventurer" || this.isAutobuyer) && Object.values(lockedSpells).some(s => !s)) {
+			unitElWrapper.querySelector(".spell-wrapper").style.display = "block";
+			unitElWrapper.querySelector(".spell").disabled = false;
+		} else if (this.spell !== null) {
+			unitElWrapper.querySelector(".spell-wrapper").style.display = "block";
+			unitElWrapper.querySelector(".spell").disabled = true;
+		} else {
+			unitElWrapper.querySelector(".spell-wrapper").style.display = "none";
+		}
 		let offlineXpButton = unitElWrapper.querySelector("#offline-xp-button");
 		if (this.playerOwned){
 			offlineXpButton.style.display = "inline-block";
@@ -274,6 +301,9 @@ class Unit {
 		} else {
 			document.querySelector("#unit .Health .current").style.width = `0%`;
 			maps[currentLevel].noHighlight();
+		}
+		if (!this.stats.Mana.locked){
+			document.querySelector("#unit .Mana .current").style.width = `${100 * this.stats.Mana.current / this.stats.Mana.value}%`;
 		}
 		let conditionTemplate = document.querySelector("#condition-template");
 		let conditionWrapper = document.querySelector("#conditions");
@@ -366,6 +396,12 @@ class Unit {
 			Object.values(this.conditions).forEach(s => s.onTick(this));
 			extraTicks = this.stats.Haste.getTicks();
 		}
+		if (this.conditions.Slowed.missTurn()){
+			if (extraTicks > 0){
+				return this.tick(extraTicks - 1);
+			}
+			return;
+		}
 		let move = this.ai.move(maps[currentLevel], this);
 		if (this.spell && this.spell.tryCast(this)){
 			move = {};
@@ -425,7 +461,10 @@ function shuffle(arr) {
     return arr;
 }
 
-function formatNumber(number){
+function formatNumber(number, digits = 0){
+	if (digits !== 0){
+		return Math.round(number * (10 ** digits)) / (10 ** digits);
+	}
 	if (Math.abs(Math.round(number) - number) < 0.01){
 		return Math.round(number);
 	}

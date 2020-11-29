@@ -28,6 +28,7 @@ class Challenge {
 		}
 		if (this.bestFloor == this.completeLevel){
 			this.completeReward();
+			this.completeLevel = 0;
 			if (this.completionEnds) startChallenge(null);
 		}
 	}
@@ -45,6 +46,8 @@ let challenges = {
 	NoDefense: new Challenge("No Defense", "Delve without the ability to increase any defensive stat.", gainBase([["Dodge", 2], ["Health", 20]]), "+2 Dodge & +20 Health", ["Health", "Dodge", "Protection", "Block", "Regeneration", "Vampirism", "Blunting"]),
 	Restless: new Challenge("Restless", "Delve, but there is no healing between levels and all enemies gain significant max health (x10) and regeneration (equal to original max health).  After beating level 10, unlocks the Regeneration Autobuyer.", () => {}, "+10% regen effectiveness", [], 10, unlockAutobuyer("Regeneration")),
 	Respawning: new Challenge("Respawning", "Whenever you kill an enemy, it respawns in an unexplored area of the map, five levels stronger.  You only get xp for killing them the first time.", () => {displaySelectedUnit()}, "+1% caps on all stats", []),
+	Quickly: new Challenge("Quickly", "All enemies gain 1500% Haste.  They're so fast, you can't Block!", gainBase([["Haste", 0.01]]), "+1 Haste", ["Block"]),
+	Magical: new Challenge("Magical", "Your non-magical attacks do nothing.", gainBase([["ManaRegeneration", 0.05]]), "+0.05 Mana Regeneration", []),
 };
 
 function gainBase(stats){

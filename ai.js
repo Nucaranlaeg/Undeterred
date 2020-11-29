@@ -188,6 +188,60 @@ class AISummoner extends AI {
 	}
 }
 
+class AIArcher extends AI {
+	constructor(){
+		super("Archer", "Moves toward the nearest attackable enemy, even if it can't get to the enemy.", "First, attacks any enemy within range.  Second, attempts to move toward the nearest space from which it can attack an enemy.  Third, attempts to move toward the nearest unexplored area with a clear path.  If a clear path is not found to either, this AI causes the unit to stays still.  Goblins aren't intelligent enough to use this.", 31);
+	}
+	
+	move(map, unit){
+		let targetUnits = [];
+		if (unit.playerOwned){
+			targetUnits = map.getVisibleEnemies();
+		} else {
+			if (!map.isVisible(unit)) return {};
+			targetUnits = playerUnits.filter(unit => !unit.dead && unit.active);
+			if (targetUnits.length == 0){
+				// If all the player units are dead, don't crash.
+				return {};
+			}
+		}
+		if (targetUnits.length == 0){
+			// Move to the nearest unexplored area.
+			let [x, y, dist] = breadthFirstSearch(map, unit.x, unit.y, (x, y) => !map.isVisibleSpace(x, y), false);
+			return {
+				type: "move",
+				x: x,
+				y: y,
+			};
+		}
+		// Attempt to attack, attacking a random unit.
+		let attackableUnits = targetUnits.filter(target => Math.abs(target.x - unit.x) + Math.abs(target.y - unit.y) <= unit.stats.Range.value && map.isClearLine([unit.x, unit.y], [target.x, target.y]));
+		if (attackableUnits.length > 0){
+			return {
+				type: "attack",
+				enemy: attackableUnits[Math.floor(Math.random() * attackableUnits.length)],
+			};
+		}
+		// Move to the nearest enemy unit.
+		let [x, y, dist] = breadthFirstSearch(map, unit.x, unit.y, (x, y) => targetUnits.some(target =>  Math.abs(target.x - x) + Math.abs(target.y - y) <= unit.stats.Range.value && map.isClearLine([x, y], [target.x, target.y])), false);
+		if (x !== unit.x || y !== unit.y){
+			return {
+				type: "move",
+				x: x,
+				y: y,
+			};
+		}
+		// Move to the nearest unexplored area.
+		[x, y, dist] = breadthFirstSearch(map, unit.x, unit.y, (x, y) => !map.isVisibleSpace(x, y), false);
+		return {
+			type: "move",
+			x: x,
+			y: y,
+		};
+	}
+}
+
+
 function breadthFirstSearch(map, x, y, isTarget, ignoreCreatures, useDiagonals = 0){
 	let possibleMoves = [
 		[x+1, y, x+1, y, 0],
@@ -259,6 +313,7 @@ let ais = {
 	Nearest: new AINearest(),
 	Coward: new AICoward(),
 	Summoner: new AISummoner(),
+	Archer: new AIArcher(),
 };
 
 function fillAIDropdown(){
