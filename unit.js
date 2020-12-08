@@ -370,12 +370,12 @@ class Unit {
 	autobuyCapBreakers(){
 		if (!settings.autobuyer) return;
 		let autobuyStats = Object.entries(autobuyerUnits[this.role].stats).filter(stat => {
-			return this.stats[stat[0]].cap < stat[1].cap;
+			return this.stats[stat[0]].breaks < stat[1].breaks;
 		});
 		shuffle(autobuyStats);
 		let index = 0;
 		while (this.capBreakers >= 1 && autobuyStats.length){
-			if (autobuyStats[index][1].cap > this.stats[autobuyStats[index][0]].cap){
+			if (autobuyStats[index][1].breaks > this.stats[autobuyStats[index][0]].breaks){
 				if (!this.breakCap(autobuyStats[index][0], null)){
 					autobuyStats.splice(index, 1);
 				}
