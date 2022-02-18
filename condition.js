@@ -39,6 +39,7 @@ class Bleeding extends Condition {
 
 	onTick(unit){
 		unit.stats.Health.takeDamage({enemy: unit, damage: this.value});
+		updateStatistic("Damage", !unit.playerOwned, this.value);
 	}
 
 	isOverCleanseThreshold(unit){

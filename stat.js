@@ -214,7 +214,9 @@ class Regeneration extends Stat {
 	}
 
 	onTick(unit){
-		unit.stats.Health.heal(this.value * (1 + (unit.name == "Adventurer" ? 0.1 * challenges.Restless.bestFloor : 0)));
+		const healAmount = this.value * (1 + (unit.name == "Adventurer" ? 0.1 * challenges.Restless.bestFloor : 0));
+		updateStatistic("Regen", unit.playerOwned, Math.min(unit.stats.Health.value - unit.stats.Health.current, healAmount));
+		unit.stats.Health.heal(healAmount);
 	}
 
 	getDescription(){

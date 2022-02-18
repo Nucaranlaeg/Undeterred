@@ -74,7 +74,7 @@ class Map {
 	complete(){
 		if (!this.conquered){
 			displayMessage(this.conquerMessage + ` (${this.mapName})`);
-			if (currentLevel >= bestLevel) applyReward(this.reward);
+			if (currentLevel >= bestLevel && this.reward !== null) applyReward(this.reward);
 		}
 		if (activeChallenge){
 			activeChallenge.updateReward();
@@ -99,7 +99,7 @@ class Map {
 		this.mapNodes = [];
 		document.querySelector("#map-title").innerHTML = this.mapName;
 		let rewardEl = document.querySelector("#map-reward");
-		rewardEl.innerHTML = "Reward: " + this.reward.replace(/ /, " - ").replace(/(\w)([A-Z])/g, "$1 $2");
+		rewardEl.innerHTML = "Reward: " + (this.reward || "").replace(/ /, " - ").replace(/(\w)([A-Z])/g, "$1 $2");
 		if (bestLevel > this.levelNo){
 			rewardEl.classList.add("complete");
 		} else {
@@ -336,7 +336,7 @@ maps.push(new Map("Level 3",
 					 "##aa#######",
 					 "###########"],
 					4,
-					"autoUnselect",
+					null,
 					"The tight confines of this anthill do not faze you.  You refuse to yield to fear."));
 
 maps.push(new Map("Level 4",
@@ -360,7 +360,7 @@ maps.push(new Map("Level 4",
 					 "##a########a..#",
 					 "###############"],
 					4,
-					"Autobuyer Damage",
+					null,
 					"The maze-like anthill goes deep into the ground.  You feel like you've been lost a dozen times or more by now."));
 
 maps.push(new Map("Level 5",
@@ -406,7 +406,7 @@ maps.push(new Map("Level 6",
 					 "##a.......r...###",
 					 "#################"],
 					5,
-					"Autobuyer Health",
+					null,
 					"With each new level, the creatures seem to be getting stronger.  Surely there are great treasures to be discovered below!  You emerge into a larger cavern."));
 
 maps.push(new Map("Level 7",
@@ -430,7 +430,7 @@ maps.push(new Map("Level 7",
 					 "##aaaa.......r###",
 					 "#################"],
 					4,
-					"multiXp",
+					null,
 					"The ants are getting larger and fiercer.  But you are getting stronger as well, and feel confident you can complete this challenge."));
 
 maps.push(new Map("Level 8",
@@ -454,7 +454,7 @@ maps.push(new Map("Level 8",
 					 "##......#######..####",
 					 "#####################"],
 					3,
-					"Autobuyer ToHit",
+					null,
 					"The deeper you go, the stronger you feel - but the same can be said of your enemies.  Your torches flicker."));
 
 maps.push(new Map("Level 9",
@@ -477,7 +477,7 @@ maps.push(new Map("Level 9",
 					 "##.#...rr.....###",
 					 "#################"],
 					2,
-					"Autobuyer Dodge",
+					null,
 					"You continue cautiously into the dark.  Surely it won't be long before you manage to conquer this anthill."));
 
 maps.push(new Map("Level 10",
@@ -520,7 +520,7 @@ maps.push(new Map("Level 11",
 					 "###gg..gg##",
 					 "###########"],
 					4,
-					"Autobuyer Protection",
+					null,
 					"Goblins.  Nasty little creatures that put up a fierce resistance.  Good thing your swords are sharper than theirs."));
 
 maps.push(new Map("Level 12",
@@ -558,7 +558,7 @@ maps.push(new Map("Level 13",
 					 "###..gg....gg..##",
 					 "#################"],
 					4,
-					"Autobuyer CriticalHit",
+					null,
 					"Not the most inventive creatures, goblins.  You're starting to notice a pattern in their caves."));
 
 maps.push(new Map("Level 14",
@@ -690,7 +690,7 @@ maps.push(new Map("Level 19",
 					 "####....ww....###",
 					 "#################"],
 					4,
-					"Autobuyer Haste",
+					null,
 					"It's a good thing you're so dedicated to seeing this through, or you might have given up by now."));
 
 maps.push(new Map("Level 20",
@@ -908,7 +908,7 @@ maps.push(new Map("Level 28",
 					 "#.........z.z.........#",
 					 "#######################"],
 					4,
-					"Autobuyer Bleed",
+					null,
 					"It's hard to believe that the revenants occur naturally here, even moreso than any of the other creatures here.  Could someone have raised them intentionally?"));
 
 maps.push(new Map("Level 29",
@@ -926,7 +926,7 @@ maps.push(new Map("Level 29",
 					 "#..z..z..z#..z.....z.z#",
 					 "#######################"],
 					4,
-					"Autobuyer Block",
+					null,
 					"The density of the undead leads you to believe you're closing in on their source."));
 
 maps.push(new Map("Level 30",

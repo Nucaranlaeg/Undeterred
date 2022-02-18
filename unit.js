@@ -114,12 +114,15 @@ class Unit {
 		} else if (this.playerOwned && activeChallenge && activeChallenge.name == "Magical"){
 			return;
 		}
+		updateStatistic("Attacks", this.playerOwned, attackStats.attacks);
 		Object.values(this.stats).forEach(s => s.onAttack(attackStats));
+		updateStatistic("Hits", this.playerOwned, attackStats.hits);
 		if (attackStats.hits == 0) return 0;
 		Object.values(this.stats).forEach(s => s.onHit(attackStats));
 		if (attackStats.damage == 0) return 0;
 		Object.values(this.stats).forEach(s => s.onDamage(attackStats));
 		Object.values(enemy.stats).forEach(s => s.onTakeDamage(attackStats));
+		updateStatistic("Damage", this.playerOwned, attackStats.damage);
 		enemy.stats.Health.takeDamage(attackStats);
 	}
 
@@ -343,7 +346,6 @@ class Unit {
 
 	// Check if autobuying is needed, and if so, do it.
 	autobuy(){
-		if (!settings.autobuyer) return;
 		this.autobuyCapBreakers();
 		let autobuyStats = Object.keys(autobuyerUnits[this.role].stats);
 		shuffle(autobuyStats);
@@ -368,7 +370,6 @@ class Unit {
 	}
 
 	autobuyCapBreakers(){
-		if (!settings.autobuyer) return;
 		let autobuyStats = Object.entries(autobuyerUnits[this.role].stats).filter(stat => {
 			return this.stats[stat[0]].breaks < stat[1].breaks;
 		});
@@ -461,8 +462,8 @@ function shuffle(arr) {
     return arr;
 }
 
-function formatNumber(number, digits = 0){
-	if (digits !== 0){
+function formatNumber(number, digits = null){
+	if (digits !== null){
 		return Math.round(number * (10 ** digits)) / (10 ** digits);
 	}
 	if (Math.abs(Math.round(number) - number) < 0.01){

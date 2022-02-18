@@ -8,6 +8,7 @@ let settings = {
 	autobuyer: true,
 	multiXp: 1,
 	showChallenges: false,
+	statistics: false,
 }
 
 let settingMessages = {
@@ -36,13 +37,13 @@ let settingMessages = {
 		"Autobuyer Off",
 		"Autobuyer On",
 	],
+	statistics: [
+		"Whole run statistics",
+		"Single floor statistics",
+	],
 }
 
 let lockedSettings = {
-	autoUnselect: true,
-	autoDiscard: true,
-	autobuyer: true,
-	multiXp: true,
 }
 
 function toggleSetting(label){
@@ -75,7 +76,7 @@ function displaySettings(){
 	options.querySelector("#auto-discard").innerHTML = settingMessages.autoDiscard[autoDiscardOptions.findIndex(s => s == settings.autoDiscard)];
 	options.querySelector("#multi-xp").innerHTML = settingMessages.multiXp[multiXpOptions.findIndex(s => s == settings.multiXp)];
 	options.querySelector("#autobuyer").innerHTML = settingMessages.autobuyer[+settings.autobuyer];
-	options.querySelector("#configure-autobuyer").style.display = lockedSettings.autobuyer ? "none" : "block";
+	options.querySelector("#statistics-by-level").innerHTML = settingMessages.statistics[+settings.statistics];
 	// Hide locked settings.
 	for (const [key, value] of Object.entries(lockedSettings)){
 		options.querySelector(`#${key.replace(/([A-Z])/, "-$1").toLowerCase()}`).style.display = value ? "none" : "block";

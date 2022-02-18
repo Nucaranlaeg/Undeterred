@@ -39,6 +39,7 @@ calculateBaseStatValue();
 
 function beginRun(){
 	if (tickInterval) return;
+	resetStatistics();
 	let partyUnits = playerUnits.filter(unit => unit.active);
 	let lastUnitRole = 0;
 	while (partyUnits.length > 3){
@@ -103,6 +104,7 @@ function beginRun(){
 }
 
 function loadNextMap(){
+	resetStatistics(true);
 	oldEnemies.forEach(e => e.removeSummary());
 	oldEnemies = [];
 	let partyUnits = playerUnits.filter(unit => unit.active);
@@ -257,6 +259,7 @@ function displayAllUnits(){
 }
 
 function applyReward(reward){
+	if (reward === null) return;
 	if ((new Unit(false, "", {})).stats[reward] !== undefined){
 		// Check if the reward is a stat.
 		if (reward == "CriticalDamage"){
@@ -270,15 +273,10 @@ function applyReward(reward){
 			baseStats[reward] = 0;
 		}
 		displayMessage(`You have learned the ${reward} skill!`);
-		if (bestLevel > 30){
-			applyReward("Autobuyer " + reward);
-		}
+		autobuyerUnits.forEach(autobuyer => autobuyer.unlock(reward));
 	} else if (lockedSettings[reward]) {
 		// Check if reward is a setting.
 		lockedSettings[reward] = false;
-		if (reward == "autoUnselect"){
-			lockedSettings["autoDiscard"] = false;
-		}
 		displayMessage(`You have unlocked the ${reward} setting!`);
 		displaySettings();
 	} else if (reward == "FasterTicks") {
@@ -293,18 +291,6 @@ function applyReward(reward){
 	} else if (reward == "BuyCapbuyers") {
 		unlockedCapbuyerbuyer = true;
 		displayMessage(`You can now spend xp to buy more capbuyers! (NOT IMPLEMENTED)`);
-	} else if (reward.split(" ")[0] == "Autobuyer") {
-		let stat = reward.split(" ")[1];
-		displayMessage(`You have unlocked the Autobuyer for ${stat}!`);
-		if (lockedSettings["autobuyer"]){
-			displayMessage(`Decrease autobuyer values by right-clicking on the relevant stat.`);
-		}
-		lockedSettings["autobuyer"] = false;
-		displaySettings();
-		autobuyerUnits.forEach(autobuyer => autobuyer.unlock(stat));
-		if (reward == "Autobuyer Damage"){
-			document.querySelector("#tutorial5").style.display = "block";	
-		}
 	} else if (reward.split(" ")[0] == "Challenge") {
 		let challenge = reward.split(" ")[1];
 		displayMessage(`You have unlocked the ${challenge} challenge!`);

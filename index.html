@@ -56,6 +56,12 @@
 				<div class="highest-floor"></div>
 				<div class="reward"></div>
 			</div>
+			<div id="statistic-template" class="statistic">
+				<div class="name"></div>
+				<div class="value"></div>
+				<div class="second-value"></div>
+				<div class="description"></div>
+			</div>
 		</div>
 		<div class="col options-col">
 			<div class="col-header">Options</div>
@@ -66,6 +72,7 @@
 			<button id="multi-xp" class="option-button" onclick="toggleSetting('multiXp')" oncontextmenu="toggleSetting('multiXp');toggleSetting('multiXp');toggleSetting('multiXp');event.preventDefault()"></button>
 			<button id="autobuyer" class="option-button" onclick="toggleSetting('autobuyer')"></button>
 			<button id="configure-autobuyer" class="option-button" onclick="configureAutobuyer()">Configure Autobuyer</button>
+			<button id="statistics-by-level" class="option-button" onclick="toggleSetting('statistics') && updateAll()"></button>
 			<button id="stop-button" onclick="stopRun()">Exit Dungeon</button>
 			<button id="save-button" onclick="trySave()">Save Game<div class="description">Game saves automatically upon completing a floor.</div></button>
 			<button id="export-button" onclick="openImportExport()">Import/Export</button>
@@ -129,6 +136,13 @@
 			<div class="col-header">Challenges</div>
 			<div id="challenges"></div>
 			<button id="exit-challenge" ondblclick="startChallenge(null)">Exit Challenge<br>(Double click)</button>
+		</div>
+		<div id="statistics-wrapper" class="col party-col">
+			<div class="col-header">Statistics</div>
+			<div class="col-header">You</div>
+			<div id="you-statistics-wrapper"></div>
+			<div class="col-header">Enemies</div>
+			<div id="enemy-statistics-wrapper"></div>
 		</div>
 		<div id="challenge-confirm" class="lightbox" onclick="document.querySelector('#challenge-confirm').style.display = 'none'">
 			<div id="challenge-confirm-text" onclick="event.stopPropagation()">
@@ -249,20 +263,20 @@
 				You'll unlock more as you delve deeper.
 			</div>
 		</div>
-		<div id="tutorial4" class="lightbox" onclick="(this.style.display = 'none')">
+		<div id="tutorial4" class="lightbox" onclick="(this.style.display = 'none') && (document.querySelector('#tutorial5').style.display = 'block')">
+			<div class="tutorial-dialogue" style="top: 50px; left: 50px; width: 300px;">
+				You've unlocked the autobuyer!  If you click the "autobuyer" button on the left, you can toggle whether on not it's active as well as adjust what stats you're automatically buying.
+			</div>
+			<div class="tutorial-dialogue" style="top: 149px; left: 50px; width: 200px;">
+				Right click to lower values.
+			</div>
+		</div>
+		<div id="tutorial5" class="lightbox" onclick="(this.style.display = 'none')">
 			<div class="tutorial-dialogue" style="top: 50px; left: 50px; width: 200px;">
 				You can also click on enemies to see their stats.
 			</div>
 			<div class="tutorial-dialogue" style="top: 113px; left: 50px; width: 200px;">
 				Now, click the "Enter the dungeon!" button to begin!
-			</div>
-		</div>
-		<div id="tutorial5" class="lightbox" onclick="(this.style.display = 'none')">
-			<div class="tutorial-dialogue" style="top: 50px; left: 50px; width: 300px;">
-				You've unlocked the autobuyer!  If you click the "autobuyer" button on the left, you can toggle whether on not it's active as well as adjust what stats you're automatically buying.
-			</div>
-			<div class="tutorial-dialogue" style="top: 149px; left: 50px; width: 200px;">
-				You'll unlock more autobuyer options as you delve deeper.
 			</div>
 		</div>
 		<script src="settings.js"></script>
@@ -276,6 +290,7 @@
 		<script src="maps.js"></script>
 		<script src="messages.js"></script>
 		<script src="challenges.js"></script>
+		<script src="statistics.js"></script>
 		<script src="main.js"></script>
 		<script src="save.js"></script>
 	</body>

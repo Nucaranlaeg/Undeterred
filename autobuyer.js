@@ -5,7 +5,9 @@ class AutobuyerUnit extends Unit {
 		this.capBreakers = Infinity;
 		this.capBreakersUsed = 0;
 		this.stats.Health.value = 50;
+		this.stats.Health.locked = false;
 		this.stats.Damage.value = 5;
+		this.stats.Damage.locked = false;
 		this.isAutobuyer = true;
 		this.role = index;
 	}
