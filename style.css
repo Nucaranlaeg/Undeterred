@@ -586,6 +586,7 @@ td.highlight {
 .statistic .second-value {
 	float: inline-end;
 	text-align: right;
+	padding-right: 5px;
 }
 
 .char-info select {

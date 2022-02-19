@@ -346,30 +346,50 @@ class Unit {
 
 	// Check if autobuying is needed, and if so, do it.
 	autobuy(){
+		if (!settings.autobuyer) return;
 		this.autobuyCapBreakers();
-		let autobuyStats = Object.keys(autobuyerUnits[this.role].stats);
-		shuffle(autobuyStats);
-		let index = 0;
+		const autobuyStats = Object.keys(autobuyerUnits[this.role].stats);
+		let total = 0;
+		let goalAmounts = autobuyStats.map(s => {
+			const amount = (autobuyerUnits[this.role].stats[s].value - this.stats[s].value) / this.stats[s].xpMult;
+			if (amount > 0) total += amount;
+			return {
+				stat: s,
+				amount: amount,
+			};
+		}).filter(f => f.amount > 0);
+		goalAmounts = shuffle(goalAmounts);
+		let next = 0;
 		let spent = false;
-		while (this.xp >= 1 && autobuyStats.length){
-			if (autobuyerUnits[this.role].stats[autobuyStats[index]].value - 0.001 > this.stats[autobuyStats[index]].value){
-				let startingValue = this.stats[autobuyStats[index]].value;
-				this.spendXp(autobuyStats[index], null, 1);
+		while (this.xp >= 1 && goalAmounts.length){
+			for (let i = 0; i < goalAmounts.length; i++){
+				if (goalAmounts[i].amount <= 0){
+					total -= goalAmounts[i].amount;
+					goalAmounts.splice(i, 1);
+					continue;
+				}
+				// There's an extra 1.2 multiplier to bias it toward the biggest gap.
+				next += this.xp / total * goalAmounts[i].amount * 1.2;
+				if (next < 1) continue;
+				let startingValue = this.stats[goalAmounts[i].stat].value;
+				this.spendXp(goalAmounts[i].stat, null, Math.floor(next));
+				total -= Math.floor(next);
+				goalAmounts[i].amount -= Math.floor(next);
+				next -= Math.floor(next);
 				// If we're at the cap or something else prevents us from buying...
-				if (startingValue == this.stats[autobuyStats[index]].value){
-					autobuyStats.splice(index, 1);
+				if (startingValue == this.stats[goalAmounts[i].stat].value){
+					total -= goalAmounts[i].amount;
+					goalAmounts.splice(i, 1);
 				} else {
 					spent = true;
 				}
-			} else {
-				autobuyStats.splice(index, 1);
 			}
-			index = (index + 1) % autobuyStats.length;
 		}
 		if (this == selectedUnit && spent) this.display();
 	}
 
 	autobuyCapBreakers(){
+		if (!settings.autobuyer) return;
 		let autobuyStats = Object.entries(autobuyerUnits[this.role].stats).filter(stat => {
 			return this.stats[stat[0]].breaks < stat[1].breaks;
 		});

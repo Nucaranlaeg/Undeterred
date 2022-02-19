@@ -186,7 +186,7 @@ function load(){
 	let loadFloor = +localStorage.loadFloor;
 	if (loadFloor == currentLevel){
 		localStorage.loads = loads + 1;
-		if (loads >= 3 && localStorage.debug !== "testing"){
+		if (loads >= 3000 && localStorage.debug !== "testing"){
 			currentLevel = 0;
 			displayHelpMessage("Max Loads");
 		}

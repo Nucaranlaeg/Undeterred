@@ -135,6 +135,7 @@ class CriticalHit extends Stat {
 			if (activeChallenge && activeChallenge.name == "Criticality" && !attackStats.attacker.playerOwned){
 				critCount++;
 			}
+			updateStatistic("Criticals", attackStats.attacker.playerOwned, critCount);
 			let critMult = attackStats.attacker.stats.CriticalDamage.value ** critCount - 1;
 			critMult *= 100 / (100 + attackStats.enemy.stats.Blunting.value);
 			attackStats.damage += attackStats.attacker.stats.Damage.value * critMult;
@@ -193,6 +194,7 @@ class Block extends Stat {
 	}
 
 	onTakeDamage(attackStats){
+		updateStatistic("Block", !attackStats.attacker.playerOwned, Math.min(attackStats.damage, this.value * attackStats.hits));
 		attackStats.damage -= this.value * attackStats.hits;
 		if (attackStats.damage < 0) attackStats.damage = 0;
 	}

@@ -58,7 +58,7 @@ function showHints(){
 		hintSelect.onclick = event => {
 			document.querySelectorAll(".help-item.active").forEach(el => el.classList.remove("active"));
 			event.target.classList.add("active");
-			document.querySelector("#help-description").innerHTML = value;
+			document.querySelector("#help-description").innerHTML = value[0];
 		};
 		selector.appendChild(hintSelect);
 	}

@@ -97,7 +97,7 @@ let creatures = {
 		Damage: 30,
 		ToHit: 50,
 		Dodge: 10,
-		Protection: 40,
+		Protection: 38,
 		Regeneration: 1,
 		Block: 30,
 		xp: 6,

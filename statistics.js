@@ -74,6 +74,8 @@ const statistics = [
 	new Statistic("Damage", "The amount of damage you've taken.", true),
 	new Statistic("Criticals", "The number of critical hits you've scored.", false),
 	new Statistic("Criticals", "The number of critical hits which have been scored on you.", true),
+	new Statistic("Block", "The amount of damage you've blocked.", false),
+	new Statistic("Block", "The amount of damage your enemies have blocked.", true),
 	new Statistic("Regen", "The amount of health you've regenerated.", false),
 	new Statistic("Regen", "The amount of health your enemies have regenerated.", true),
 ];
